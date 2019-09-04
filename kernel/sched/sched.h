@@ -1824,6 +1824,11 @@ struct sched_class {
 #endif
 
 	void (*task_dead)(struct task_struct *p);
+#ifdef CONFIG_SCHED_WALT
+	void (*fixup_cumulative_runnable_avg)(struct rq *rq,
+					      struct task_struct *task,
+					      u64 new_task_load);
+#endif
 };
 
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
