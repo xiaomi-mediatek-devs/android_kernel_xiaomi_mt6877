@@ -66,6 +66,7 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/seq_file.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
 #include <linux/pid_namespace.h>
 #include <linux/security.h>
@@ -73,6 +74,7 @@
 #include <linux/ratelimit.h>
 
 #include <uapi/linux/android/binder.h>
+#include <uapi/linux/android/binderfs.h>
 #include <uapi/linux/sched/types.h>
 
 #ifdef CONFIG_MTK_TASK_TURBO
@@ -3030,7 +3032,7 @@ static void binder_transaction(struct binder_proc *proc,
 	e->target_handle = tr->target.handle;
 	e->data_size = tr->data_size;
 	e->offsets_size = tr->offsets_size;
-	e->context_name = proc->context->name;
+	strscpy(e->context_name, proc->context->name, BINDERFS_MAX_NAME);
 #ifdef CONFIG_ANDROID_BINDER_USER_TRACKING
 	ktime_get_ts(&e->timestamp);
 	/* monotonic_to_bootbased(&e->timestamp); */
