@@ -168,6 +168,8 @@ static void cpuidle_idle_call(void)
 	 */
 
 	if (idle_should_enter_s2idle() || dev->forced_idle_latency_limit_ns) {
+		u64 max_latency_ns;
+
 		if (idle_should_enter_s2idle()) {
 
 			entered_state = cpuidle_enter_s2idle(drv, dev);
@@ -175,11 +177,14 @@ static void cpuidle_idle_call(void)
 				local_irq_enable();
 				goto exit_idle;
 			}
+			max_latency_ns = U64_MAX;
+		} else {
+			max_latency_ns = dev->forced_idle_latency_limit_ns;
 		}
 
 		tick_nohz_idle_stop_tick();
 
-		next_state = cpuidle_find_deepest_state(drv, dev);
+		next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
 		call_cpuidle(drv, dev, next_state);
 	} else {
 		bool stop_tick = true;
