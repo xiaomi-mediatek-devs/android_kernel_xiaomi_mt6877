@@ -802,7 +802,6 @@ int buffer_migrate_page(struct address_space *mapping,
 		BUG_ON(!buffer_migrate_lock_buffers(head, mode));
 
 	attach_page_private(newpage, detach_page_private(page));
-	get_page(newpage);
 
 	bh = head;
 	do {
