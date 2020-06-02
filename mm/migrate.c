@@ -801,10 +801,7 @@ int buffer_migrate_page(struct address_space *mapping,
 	if (mode != MIGRATE_ASYNC)
 		BUG_ON(!buffer_migrate_lock_buffers(head, mode));
 
-	ClearPagePrivate(page);
-	set_page_private(newpage, page_private(page));
-	set_page_private(page, 0);
-	put_page(page);
+	attach_page_private(newpage, detach_page_private(page));
 	get_page(newpage);
 
 	bh = head;
@@ -813,8 +810,6 @@ int buffer_migrate_page(struct address_space *mapping,
 		bh = bh->b_this_page;
 
 	} while (bh != head);
-
-	SetPagePrivate(newpage);
 
 	if (mode != MIGRATE_SYNC_NO_COPY)
 		migrate_page_copy(newpage, page);
