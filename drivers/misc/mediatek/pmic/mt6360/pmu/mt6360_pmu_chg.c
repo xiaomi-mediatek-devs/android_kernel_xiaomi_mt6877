@@ -182,10 +182,6 @@ static enum power_supply_usb_type mt6360_pmu_chg_usb_types[] = {
 	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID
 };
 
-static const char *mt6360_chg_status_name[MT6360_CHG_STATUS_MAX] = {
-	"ready", "progress", "done", "fault",
-};
-
 static const struct mt6360_chg_platform_data def_platform_data = {
 	.ichg = 2000000,		/* uA */
 	.aicr = 500000,			/* uA */
@@ -1721,69 +1717,6 @@ static int mt6360_get_zcv(struct charger_device *chg_dev, u32 *uV)
 	return 0;
 }
 
-static int mt6360_dump_registers(struct charger_device *chg_dev)
-{
-	struct mt6360_pmu_chg_info *mpci = charger_get_data(chg_dev);
-	int i, ret = 0;
-	int adc_vals[MT6360_ADC_MAX];
-	u32 ichg = 0, aicr = 0, mivr = 0, cv = 0, ieoc = 0;
-	enum mt6360_charging_status chg_stat = MT6360_CHG_STATUS_READY;
-	bool chg_en = false;
-	u8 chg_stat1 = 0, chg_ctrl[2] = {0};
-
-	dev_dbg(mpci->dev, "%s\n", __func__);
-	ret = mt6360_get_ichg(chg_dev, &ichg);
-	ret |= mt6360_get_aicr(chg_dev, &aicr);
-	ret |= mt6360_get_mivr(chg_dev, &mivr);
-	ret |= mt6360_get_cv(chg_dev, &cv);
-	ret |= mt6360_get_ieoc(mpci, &ieoc);
-	ret |= mt6360_get_charging_status(mpci, &chg_stat);
-	ret |= mt6360_is_charger_enabled(mpci, &chg_en);
-	if (ret < 0) {
-		dev_notice(mpci->dev, "%s: parse chg setting fail\n", __func__);
-		return ret;
-	}
-	for (i = 0; i < MT6360_ADC_MAX; i++) {
-		/* Skip unnecessary channel */
-		if (i >= MT6360_ADC_NODUMP)
-			break;
-		ret = iio_read_channel_processed(mpci->channels[i],
-						 &adc_vals[i]);
-		if (ret < 0) {
-			dev_err(mpci->dev,
-				"%s: read [%s] adc fail(%d)\n",
-				__func__, mt6360_adc_chan_list[i], ret);
-			return ret;
-		}
-	}
-	ret = mt6360_pmu_reg_read(mpci->mpi, MT6360_PMU_CHG_STAT1);
-	if (ret < 0)
-		return ret;
-	chg_stat1 = ret;
-
-	ret = mt6360_pmu_reg_block_read(mpci->mpi, MT6360_PMU_CHG_CTRL1,
-					2, chg_ctrl);
-	if (ret < 0)
-		return ret;
-	dev_info(mpci->dev,
-		 "%s: ICHG = %dmA, AICR = %dmA, MIVR = %dmV, IEOC = %dmA, CV = %dmV\n",
-		 __func__, ichg / 1000, aicr / 1000, mivr / 1000, ieoc / 1000,
-		 cv / 1000);
-	dev_info(mpci->dev,
-		 "%s: VBUS = %dmV, IBUS = %dmA, VSYS = %dmV, VBAT = %dmV, IBAT = %dmA\n",
-		 __func__,
-		 adc_vals[MT6360_ADC_VBUSDIV5] / 1000,
-		 adc_vals[MT6360_ADC_IBUS] / 1000,
-		 adc_vals[MT6360_ADC_VSYS] / 1000,
-		 adc_vals[MT6360_ADC_VBAT] / 1000,
-		 adc_vals[MT6360_ADC_IBAT] / 1000);
-	dev_info(mpci->dev, "%s: CHG_EN = %d, CHG_STATUS = %s, CHG_STAT1 = 0x%02X\n",
-		 __func__, chg_en, mt6360_chg_status_name[chg_stat], chg_stat1);
-	dev_info(mpci->dev, "%s: CHG_CTRL1 = 0x%02X, CHG_CTRL2 = 0x%02X\n",
-		 __func__, chg_ctrl[0], chg_ctrl[1]);
-	return 0;
-}
-
 static int mt6360_do_event(struct charger_device *chg_dev, u32 event,
 				   u32 args)
 {
@@ -1961,7 +1894,6 @@ static const struct charger_ops mt6360_chg_ops = {
 	.reset_eoc_state = mt6360_reset_eoc_state,
 	.is_charging_done = mt6360_is_charging_done,
 	.get_zcv = mt6360_get_zcv,
-	.dump_registers = mt6360_dump_registers,
 	/* event */
 	.event = mt6360_do_event,
 	/* TypeC */
