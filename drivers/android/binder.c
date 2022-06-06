@@ -805,6 +805,20 @@ static void binder_do_set_priority(struct binder_thread *thread,
 				  to_kernel_prio(policy, priority),
 				  desired->prio);
 
+	spin_lock(&thread->prio_lock);
+	if (!verify && thread->prio_state == BINDER_PRIO_ABORT) {
+		/*
+		 * A new priority has been set by an incoming nested
+		 * transaction. Abort this priority restore and allow
+		 * the transaction to run at the new desired priority.
+		 */
+		spin_unlock(&thread->prio_lock);
+		binder_debug(BINDER_DEBUG_PRIORITY_CAP,
+			"%d: %s: aborting priority restore\n",
+			thread->pid, __func__);
+		return;
+	}
+
 	/* Set the actual priority */
 	if (task->policy != policy || is_rt_policy(policy)) {
 		struct sched_param params;
@@ -817,6 +831,9 @@ static void binder_do_set_priority(struct binder_thread *thread,
 	}
 	if (is_fair_policy(policy))
 		set_user_nice(task, priority);
+
+	thread->prio_state = BINDER_PRIO_SET;
+	spin_unlock(&thread->prio_lock);
 }
 
 static void binder_set_priority(struct binder_thread *thread,
@@ -846,8 +863,6 @@ static void binder_transaction_priority(struct binder_thread *thread,
 		return;
 
 	t->set_priority_called = true;
-	t->saved_priority.sched_policy = task->policy;
-	t->saved_priority.prio = task->normal_prio;
 
 	if (!node->inherit_rt && is_rt_policy(desired.sched_policy)) {
 		desired.prio = NICE_TO_PRIO(0);
@@ -866,6 +881,25 @@ static void binder_transaction_priority(struct binder_thread *thread,
 		 */
 		desired = node_prio;
 	}
+
+	spin_lock(&thread->prio_lock);
+	if (thread->prio_state == BINDER_PRIO_PENDING) {
+		/*
+		 * Task is in the process of changing priorities
+		 * saving its current values would be incorrect.
+		 * Instead, save the pending priority and signal
+		 * the task to abort the priority restore.
+		 */
+		t->saved_priority = thread->prio_next;
+		thread->prio_state = BINDER_PRIO_ABORT;
+		binder_debug(BINDER_DEBUG_PRIORITY_CAP,
+			"%d: saved pending priority %d\n",
+			current->pid, thread->prio_next.prio);
+	} else {
+		t->saved_priority.sched_policy = task->policy;
+		t->saved_priority.prio = task->normal_prio;
+	}
+	spin_unlock(&thread->prio_lock);
 
 	binder_set_priority(thread, &desired);
 }
@@ -2706,6 +2740,7 @@ static void binder_transaction(struct binder_proc *proc,
 	int t_debug_id = atomic_inc_return(&binder_last_id);
 	char *secctx = NULL;
 	u32 secctx_sz = 0;
+	bool is_nested = false;
 
 	e = binder_transaction_log_add(&binder_transaction_log);
 	e->debug_id = t_debug_id;
@@ -2891,6 +2926,7 @@ static void binder_transaction(struct binder_proc *proc,
 					atomic_inc(&from->tmp_ref);
 					target_thread = from;
 					spin_unlock(&tmp->lock);
+					is_nested = true;
 					break;
 				}
 				spin_unlock(&tmp->lock);
@@ -2963,6 +2999,7 @@ static void binder_transaction(struct binder_proc *proc,
 	t->to_thread = target_thread;
 	t->code = tr->code;
 	t->flags = tr->flags;
+	t->is_nested = is_nested;
 	if (!(t->flags & TF_ONE_WAY) &&
 	    binder_supported_policy(current->policy)) {
 		/* Inherit supported policies for synchronous transactions */
@@ -3306,6 +3343,12 @@ static void binder_transaction(struct binder_proc *proc,
 		binder_enqueue_thread_work_ilocked(target_thread, &t->work);
 		target_proc->outstanding_txns++;
 		binder_inner_proc_unlock(target_proc);
+		if (in_reply_to->is_nested) {
+			spin_lock(&thread->prio_lock);
+			thread->prio_state = BINDER_PRIO_PENDING;
+			thread->prio_next = in_reply_to->saved_priority;
+			spin_unlock(&thread->prio_lock);
+		}
 		wake_up_interruptible_sync(&target_thread->wait);
 
 #ifdef CONFIG_MTK_TASK_TURBO
@@ -4464,6 +4507,8 @@ static struct binder_thread *binder_get_thread_ilocked(
 	thread->reply_error.work.type = BINDER_WORK_RETURN_ERROR;
 	thread->reply_error.cmd = BR_OK;
 	thread->ee.command = BR_OK;
+	spin_lock_init(&thread->prio_lock);
+	thread->prio_state = BINDER_PRIO_SET;
 	INIT_LIST_HEAD(&new_thread->waiting_thread_node);
 	return thread;
 }
