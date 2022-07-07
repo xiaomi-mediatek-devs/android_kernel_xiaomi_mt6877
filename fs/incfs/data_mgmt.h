@@ -429,7 +429,8 @@ struct incfs_read_data_file_timeouts {
 
 ssize_t incfs_read_data_file_block(struct mem_range dst, struct file *f,
 			int index, struct mem_range tmp,
-			struct incfs_read_data_file_timeouts *timeouts);
+			struct incfs_read_data_file_timeouts *timeouts,
+			unsigned int *delayed_min_us);
 
 int incfs_get_filled_blocks(struct data_file *df,
 			    struct incfs_file_data *fd,
