@@ -382,14 +382,6 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 #endif
 	util_cfs = util - cpu_util_rt(rq);
 
-	spin_lock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
-	if (per_cpu(cpufreq_idle_cpu, sg_cpu->cpu)) {
-		spin_unlock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
-		return 0;
-	}
-
-	spin_unlock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
-
 	return schedutil_cpu_util(sg_cpu->cpu, util_cfs, max,
 				  FREQUENCY_UTIL, NULL);
 }
@@ -683,6 +675,7 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
 		if (sugov_update_next_freq(sg_policy, time, next_f)) {
 			next_f = mt_cpufreq_find_close_freq(cid, next_f);
 			mt_cpufreq_set_by_wfi_load_cluster(cid, next_f);
+			__cpufreq_notifier_fp(cid, next_f);
 			trace_sched_util(cid, next_f, time);
 		}
 #else
@@ -690,10 +683,9 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
 			sugov_fast_switch(sg_policy, time, next_f);
 		else
 			sugov_deferred_update(sg_policy, time, next_f);
+		__cpufreq_notifier_fp(cid, next_f);
 #endif
 	}
-
-	__cpufreq_notifier_fp(cid, next_f);
 
 	raw_spin_unlock(&sg_policy->update_lock);
 }
