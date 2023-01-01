@@ -38,18 +38,18 @@ void print_error_status(struct edma_sub *edma_sub,
 	unsigned int *ext_reg = NULL;
 
 	status = edma_read_reg32(edma_sub->base_addr, APU_EDMA2_ERR_STATUS);
-	pr_notice("%s error status %x\n", edma_sub->sub_name,
+	pr_debug("%s error status %x\n", edma_sub->sub_name,
 		status);
 
 	for (i = 0; i < (EDMA_REG_SHOW_RANGE >> 2); i++) {
 		status = edma_read_reg32(edma_sub->base_addr, i*4);
-		pr_notice("edma error dump register[0x%x] = 0x%x\n",
+		pr_debug("edma error dump register[0x%x] = 0x%x\n",
 		i*4, status);
 	}
 
 	for (i = (0xC00/4); i < (0xD00/4); i++) {
 		status = edma_read_reg32(edma_sub->base_addr, i*4);
-		pr_notice("edma error dump register[0x%x] = 0x%x\n",
+		pr_debug("edma error dump register[0x%x] = 0x%x\n",
 		i*4, status);
 	}
 
@@ -57,17 +57,17 @@ void print_error_status(struct edma_sub *edma_sub,
 		ext_reg = (unsigned int *)
 			apusys_mem_query_kva(req->ext_reg_addr);
 
-		pr_notice("kva ext_reg =  0x%p, req->ext_count = %d\n",
+		pr_debug("kva ext_reg =  0x%p, req->ext_count = %d\n",
 			ext_reg, req->ext_count);
 
 		if (ext_reg !=  0)
 			for (i = 0; i < req->ext_count; i++) {
 				for (j = 0; j < EDMA_EXT_MODE_SIZE/4; j++)
-					pr_notice("descriptor%d [0x%x] = 0x%x\n",
+					pr_debug("descriptor%d [0x%x] = 0x%x\n",
 						i, j*4, *(ext_reg + j));
 			}
 		else
-			pr_notice("not support ext_reg dump!!\n");
+			pr_debug("not support ext_reg dump!!\n");
 	}
 	edma_sw_reset(edma_sub);
 }
@@ -152,11 +152,11 @@ static void edma_sw_reset(struct edma_sub *edma_sub)
 			spin_unlock_irqrestore(&edma_sub->reg_lock, flags);
 
 			/* dump error log */
-			pr_notice("hang on %s direct dump...\n", __func__);
+			pr_debug("hang on %s direct dump...\n", __func__);
 			for (i = 0; i < (EDMA_REG_SHOW_RANGE >> 2); i++) {
 				status = edma_read_reg32(edma_sub->base_addr,
 					i*4);
-				pr_notice("hang %s edma error dump [0x%x] = 0x%x\n",
+				pr_debug("hang %s edma error dump [0x%x] = 0x%x\n",
 					__func__, i*4, status);
 			}
 			apusys_reg_dump();
