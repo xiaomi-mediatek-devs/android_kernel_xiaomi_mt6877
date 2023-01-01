@@ -66,7 +66,7 @@ obj-y += cmdq-sec-mailbox.o
 
 endif # $(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT) or $(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 
-obj-y += cmdq-test.o
+# obj-y += cmdq-test.o
 obj-y += cmdq-util.o
 obj-y += $(CMDQ_PLATFORM)/cmdq-platform.o
 obj-y += cmdq-bw-mon.o
