@@ -1133,9 +1133,6 @@ cmdq_sec_task_submit(struct cmdq_sec *cmdq, struct cmdq_sec_task *task,
 	bool dump_err = false;
 	struct cmdq_pkt *pkt = task ? task->pkt : NULL;
 
-	cmdq_log("task:%p iwc_cmd:%u cmdq:%p thrd-idx:%u tgid:%u",
-		task, iwc_cmd, cmdq, thrd_idx, current->tgid);
-
 #if IS_ENABLED(CONFIG_MMPROFILE)
 	mmprofile_log_ex(cmdq->mmp.submit, MMPROFILE_FLAG_PULSE,
 		thrd_idx, (unsigned long)pkt);

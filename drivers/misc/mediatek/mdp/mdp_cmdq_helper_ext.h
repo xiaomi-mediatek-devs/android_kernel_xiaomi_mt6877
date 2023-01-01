@@ -54,29 +54,22 @@ enum TASK_STATE_ENUM {
 
 #define CMDQ_LOG(string, args...) \
 do {			\
-	pr_notice("[MDP]"string, ##args); \
-	cmdq_core_save_first_dump("[MDP]"string, ##args); \
+	pr_debug("[CMDQ]"string, ##args); \
 } while (0)
 
 #define CMDQ_MSG(string, args...) \
 do {			\
-	if (cmdq_core_should_print_msg()) { \
-		pr_notice("[MDP]"string, ##args); \
-	} \
+	pr_debug("[CMDQ]"string, ##args); \
 } while (0)
 
 #define CMDQ_VERBOSE(string, args...) \
-do { \
-	if (cmdq_core_should_print_msg()) { \
-		pr_debug("[MDP]"string, ##args); \
-	} \
+do {			\
+	pr_debug("[CMDQ]"string, ##args); \
 } while (0)
-
 
 #define CMDQ_ERR(string, args...) \
 do {			\
-	pr_notice("[MDP][ERR]"string, ##args); \
-	cmdq_core_save_first_dump("[MDP]"string, ##args); \
+	pr_err("[CMDQ][ERR]"string, ##args); \
 } while (0)
 
 #define CMDQ_CHECK_AND_BREAK_STATUS(status)\
@@ -118,7 +111,6 @@ do {			\
 		pr_debug("%s:%d len:%d over 50\n", __func__, __LINE__, len); \
 	pr_debug("[MDP][AEE] AEE not READY!!!"); \
 	pr_debug("[MDP][AEE]"string, ##args); \
-	cmdq_core_save_first_dump("[MDP][AEE]"string, ##args); \
 } while (0);	\
 }
 #endif
