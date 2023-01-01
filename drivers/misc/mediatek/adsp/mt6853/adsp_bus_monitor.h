@@ -39,6 +39,5 @@ struct bus_monitor_cblk { /* hw related */
 /* bus monitor methods, be care all of them need adsp clk on */
 int adsp_bus_monitor_init(void);
 bool is_adsp_bus_monitor_alert(void);
-void adsp_bus_monitor_dump(void);
 #endif
 
