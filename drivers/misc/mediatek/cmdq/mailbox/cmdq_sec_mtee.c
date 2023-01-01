@@ -234,20 +234,9 @@ s32 cmdq_sec_mtee_execute_session(struct cmdq_sec_mtee_context *tee,
 	param[2].value.b = tee->wsm_ex2_param.size;
 	param[3].value.a = tee->mem_handle;
 	param[3].value.b = (u32)(unsigned long)tee->mem_param.buffer;
-	cmdq_log("%s: tee:%p session:%#x cmd:%u timeout:%d",
-		__func__, tee, tee->pHandle, cmd, timeout_ms);
-	cmdq_log("%s: mem_ex:%d mem_ex2:%d types:%#x",
-		__func__, share_mem_ex, share_mem_ex2, types);
-	cmdq_log("wsm:%#x:%#x ex:%#x:%#x ex2:%#x:%#x mem:%#x:%#x",
-		param[0].value.a, param[0].value.b,
-		param[1].value.a, param[1].value.b,
-		param[2].value.a, param[2].value.b,
-		param[3].value.a, param[3].value.b);
 
 	status = KREE_TeeServiceCallPlus(tee->pHandle, cmd, types, param, 0);
 	if (status != TZ_RESULT_SUCCESS)
 		cmdq_err("%s:%d cmd:%u", __func__, status, cmd);
-	else
-		cmdq_msg("%s:%d cmd:%u", __func__, status, cmd);
 	return status;
 }
