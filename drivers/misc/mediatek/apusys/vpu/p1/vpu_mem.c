@@ -37,7 +37,7 @@ static void vpu_dump_sg(struct scatterlist *s)
 		if (!p)
 			break;
 		phys = page_to_phys(p);
-		pr_info("%s: s[%d]: pfn: %lx, pa: %lx, len: %lx, dma_addr: %lx\n",
+		pr_debug("%s: s[%d]: pfn: %lx, pa: %lx, len: %lx, dma_addr: %lx\n",
 			__func__, i,
 			(unsigned long) page_to_pfn(p),
 			(unsigned long) phys,
@@ -138,7 +138,7 @@ vpu_map_kva_to_sgt(const char *buf, size_t len, struct sg_table *sgt)
 		else
 			pages[index] = kmap_to_page((void *)p);
 		if (!pages[index]) {
-			pr_info("%s: map failed\n", __func__);
+			pr_err("%s: map failed\n", __func__);
 			ret = -EFAULT;
 			goto out;
 		}
@@ -151,7 +151,7 @@ vpu_map_kva_to_sgt(const char *buf, size_t len, struct sg_table *sgt)
 		offset_in_page(buf), len, GFP_KERNEL);
 
 	if (ret) {
-		pr_info("%s: sg_alloc_table_from_pages: %d\n",
+		pr_debug("%s: sg_alloc_table_from_pages: %d\n",
 			__func__, ret);
 		goto out;
 	}
@@ -341,7 +341,7 @@ void *vpu_vmap(phys_addr_t start, size_t size,
 	void *vaddr = NULL;
 
 	if (!size) {
-		pr_info("%s: input size should not be zero\n", __func__);
+		pr_warn("%s: input size should not be zero\n", __func__);
 		return NULL;
 	}
 
@@ -366,7 +366,7 @@ void *vpu_vmap(phys_addr_t start, size_t size,
 	vaddr = vmap(pages, page_count, VM_MAP, prot);
 	kfree(pages);
 	if (!vaddr) {
-		pr_info("%s: failed to get vaddr from vmap\n", __func__);
+		pr_err("%s: failed to get vaddr from vmap\n", __func__);
 		return NULL;
 	}
 	/*
