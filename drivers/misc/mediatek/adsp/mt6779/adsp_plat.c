@@ -73,7 +73,7 @@ void adsp_set_emimpu_region(void)
 	ret = mtk_emimpu_init_region(&adsp_region,
 				     MPU_PROCT_REGION_ADSP);
 	if (ret < 0)
-		pr_info("%s fail to init emimpu region\n", __func__);
+		pr_err("%s fail to init emimpu region\n", __func__);
 	mtk_emimpu_set_addr(&adsp_region, adspreg.sharedram,
 		    (adspreg.sharedram + adspreg.shared_size - 0x1));
 	mtk_emimpu_set_apc(&adsp_region, MPU_PROCT_D0_AP,
