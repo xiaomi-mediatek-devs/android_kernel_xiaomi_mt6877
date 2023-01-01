@@ -42,6 +42,5 @@ struct adsp_priv;
 /* bus monitor methods, be care all of them need adsp clk on */
 int adsp_bus_monitor_init(struct adsp_priv *pdata);
 bool is_adsp_bus_monitor_alert(void);
-void adsp_bus_monitor_dump(void);
 #endif
 

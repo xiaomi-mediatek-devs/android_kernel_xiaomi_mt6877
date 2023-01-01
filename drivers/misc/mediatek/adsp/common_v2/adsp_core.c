@@ -375,7 +375,7 @@ static int __init adsp_init(void)
 			      "adsp_suspend_ack");
 	adsp_timesync_init();
 
-	pr_info("%s, ret(%d)\n", __func__, ret);
+	pr_debug("%s, ret(%d)\n", __func__, ret);
 	return ret;
 }
 
@@ -427,11 +427,11 @@ static int __init adsp_module_init(void)
 	}
 
 	adsp_deregister_feature(SYSTEM_FEATURE_ID);
-	pr_info("%s done\n", __func__);
+	pr_debug("%s done\n", __func__);
 	return ret;
 
 ERROR:
-	pr_info("%s fail ret(%d)\n", __func__, ret);
+	pr_err("%s fail ret(%d)\n", __func__, ret);
 	return ret;
 }
 

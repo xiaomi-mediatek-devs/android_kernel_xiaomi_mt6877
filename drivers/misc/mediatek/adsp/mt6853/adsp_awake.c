@@ -99,7 +99,7 @@ int adsp_awake_lock(u32 cid)
 	ret = adsp_send_sys_event(&sysevent_ctrls[cid], val, true);
 
 	if (ret)
-		pr_info("%s, lock fail", __func__);
+		pr_err("%s, lock fail", __func__);
 
 	return ret;
 }
@@ -125,7 +125,7 @@ int adsp_awake_unlock(u32 cid)
 	ret = adsp_send_sys_event(&sysevent_ctrls[cid], val, true);
 
 	if (ret)
-		pr_info("%s, unlock fail", __func__);
+		pr_err("%s, unlock fail", __func__);
 
 	return ret;
 }

@@ -29,8 +29,6 @@ int adsp_set_top_mux(enum adsp_clk clk)
 {
 	int ret = 0;
 
-	pr_debug("%s(%x)\n", __func__, clk);
-
 	if (clk >= ADSP_CLK_NUM  || clk < 0)
 		return -EINVAL;
 
