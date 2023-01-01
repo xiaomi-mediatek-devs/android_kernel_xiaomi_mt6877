@@ -41,7 +41,7 @@ int mdla_init(struct apusys_core_info *info)
 		return -1;
 	}
 
-	pr_info("%s() done\n", __func__);
+	pr_debug("%s() done\n", __func__);
 
 	return 0;
 }
@@ -51,7 +51,7 @@ void mdla_exit(void)
 	mdla_dbg_fs_exit();
 	mdla_drv_exit();
 
-	pr_info("%s()!!\n", __func__);
+	pr_debug("%s()!!\n", __func__);
 }
 
 #ifdef RV_COMP

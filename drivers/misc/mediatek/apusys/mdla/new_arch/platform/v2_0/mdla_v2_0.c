@@ -242,13 +242,13 @@ static void mdla_plat_verbose_log(u32 core_id, const struct mdla_util_io_ops *io
 
 	io = mdla_util_io_ops_get();
 
-	pr_info("%d: CG_CON=0x%x\n", core_id, io->cfg.read(core_id, MDLA_CG_CON));
-	pr_info("%d: AXI_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI_CTRL));
-	pr_info("%d: AXI1_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI1_CTRL));
-	pr_info("%d: TOP_G_INTP0=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP0));
-	pr_info("%d: TOP_G_INTP1=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP1));
-	pr_info("%d: TOP_G_INTP2=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP2));
-	pr_info("%d: TOP_G_IDLE=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_IDLE));
+	pr_debug("%d: CG_CON=0x%x\n", core_id, io->cfg.read(core_id, MDLA_CG_CON));
+	pr_debug("%d: AXI_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI_CTRL));
+	pr_debug("%d: AXI1_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI1_CTRL));
+	pr_debug("%d: TOP_G_INTP0=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP0));
+	pr_debug("%d: TOP_G_INTP1=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP1));
+	pr_debug("%d: TOP_G_INTP2=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP2));
+	pr_debug("%d: TOP_G_IDLE=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_IDLE));
 }
 
 /* NOTE: hw_lock should be acquired by caller */

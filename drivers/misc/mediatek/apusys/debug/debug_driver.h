@@ -12,11 +12,11 @@
 #define DEBUG_PREFIX "[apusys_dbg]"
 
 #define DBG_LOG_ERR(x, args...) \
-	pr_info(DEBUG_PREFIX "[error] %s " x, __func__, ##args)
+	pr_err(DEBUG_PREFIX "[error] %s " x, __func__, ##args)
 #define DBG_LOG_WARN(x, args...) \
-	pr_info(DEBUG_PREFIX "[warn] %s " x, __func__, ##args)
+	pr_debug(DEBUG_PREFIX "[warn] %s " x, __func__, ##args)
 #define DBG_LOG_INFO(x, args...) \
-	pr_info(DEBUG_PREFIX "[info] %s " x, __func__, ##args)
+	pr_debug(DEBUG_PREFIX "[info] %s " x, __func__, ##args)
 
 
 /* print to console via seq file */
@@ -32,7 +32,5 @@
 #define APU_LOG_SIZE (512*1024)
 
 void apu_dbg_print(const char *fmt, ...);
-int apusys_dump_init(struct device *dev);
-void apusys_dump_exit(struct device *dev);
 
 #endif /* __DEBUG_DRIVER_H__ */
