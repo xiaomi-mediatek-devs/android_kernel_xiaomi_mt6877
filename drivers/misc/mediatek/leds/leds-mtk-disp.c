@@ -101,51 +101,13 @@ static int call_notifier(int event, struct mtk_led_data *led_dat)
 
 	err = mtk_leds_call_notifier(event, &led_dat->conf);
 	if (err)
-		pr_info("notifier_call_chain error\n");
+		pr_err("notifier_call_chain error\n");
 	return err;
 }
 
 /****************************************************************************
  * DEBUG MACROS
  ***************************************************************************/
-
-static void led_debug_log(struct mtk_led_data *s_led,
-		int level, int mappingLevel)
-{
-	unsigned long cur_time_mod = 0;
-	unsigned long long cur_time_display = 0;
-	int ret = 0;
-
-	s_led->debug.current_t = sched_clock();
-	cur_time_display = s_led->debug.current_t;
-	do_div(cur_time_display, 1000000);
-	cur_time_mod = do_div(cur_time_display, 1000);
-
-	ret = snprintf(s_led->debug.buffer + strlen(s_led->debug.buffer),
-		4095 - strlen(s_led->debug.buffer),
-		"T:%lld.%ld,L:%d L:%d map:%d    ",
-		cur_time_display, cur_time_mod,
-		s_led->conf.cdev.brightness, level, mappingLevel);
-
-	s_led->debug.count++;
-
-	if (ret < 0 || ret >= 4096) {
-		pr_info("print log error!");
-		s_led->debug.count = 5;
-	}
-
-	if (level == 0 || s_led->debug.count >= 5 ||
-		(s_led->debug.current_t - s_led->debug.last_t) > 1000000000) {
-		pr_info("%s", s_led->debug.buffer);
-		s_led->debug.count = 0;
-		s_led->debug.buffer[strlen("[Light] Set directly ") +
-			strlen(s_led->conf.cdev.name)] = '\0';
-	}
-
-	s_led->debug.last_t = sched_clock();
-}
-
-
 static int getLedDespIndex(char *name)
 {
 	int i = 0;
@@ -190,7 +152,7 @@ int mt_leds_max_brightness_set(char *name, int percent, bool enable)
 
 	index = getLedDespIndex(name);
 	if (index < 0) {
-		pr_notice("can not find leds by led_desp %s", name);
+		pr_err("can not find leds by led_desp %s", name);
 		return -1;
 	}
 	led_dat = container_of(leds_info->leds[index],
@@ -198,7 +160,7 @@ int mt_leds_max_brightness_set(char *name, int percent, bool enable)
 
 	max_l = led_dat->conf.cdev.max_brightness;
 	limit_l = (percent * max_l) / 100;
-	pr_info("before: name: %s, percent : %d, limit_l : %d, enable: %d",
+	pr_debug("before: name: %s, percent : %d, limit_l : %d, enable: %d",
 		leds_info->leds[index]->name, percent, limit_l, enable);
 	if (enable) {
 		led_dat->conf.max_level = limit_l;
@@ -213,8 +175,6 @@ int mt_leds_max_brightness_set(char *name, int percent, bool enable)
 	if (led_dat->conf.cdev.brightness != 0)
 		led_level_disp_set(led_dat, cur_l);
 
-	pr_info("after: name: %s, cur_l : %d, max_level : %d",
-		led_dat->conf.cdev.name, cur_l, led_dat->conf.max_level);
 	return 0;
 
 }
@@ -228,7 +188,7 @@ int mt_leds_brightness_set(char *name, int level)
 
 	index = getLedDespIndex(name);
 	if (index < 0) {
-		pr_notice("can not find leds by led_desp %s", name);
+		pr_err("can not find leds by led_desp %s", name);
 		return -1;
 	}
 	led_dat = container_of(leds_info->leds[index],
@@ -247,8 +207,6 @@ EXPORT_SYMBOL(mt_leds_brightness_set);
 static int led_level_set(struct led_classdev *led_cdev,
 					  enum led_brightness brightness)
 {
-	int trans_level = 0;
-
 	struct led_conf_info *led_conf =
 		container_of(led_cdev, struct led_conf_info, cdev);
 	struct mtk_led_data *led_dat =
@@ -256,13 +214,6 @@ static int led_level_set(struct led_classdev *led_cdev,
 
 	if (led_dat->brightness == brightness)
 		return 0;
-
-	trans_level = (
-		(((1 << led_dat->conf.trans_bits) - 1) * brightness
-		+ (((1 << led_dat->conf.led_bits) - 1) / 2))
-		/ ((1 << led_dat->conf.led_bits) - 1));
-
-	led_debug_log(led_dat, brightness, trans_level);
 
 #ifdef MET_USER_EVENT_SUPPORT
 	if (enable_met_backlight_tag())
@@ -292,16 +243,10 @@ static int led_data_init(struct device *dev, struct mtk_led_data *s_led)
 	s_led->last_level = s_led->conf.cdev.max_brightness;
 	ret = devm_led_classdev_register(dev, &(s_led->conf.cdev));
 	if (ret < 0) {
-		pr_notice("led class register fail!");
+		pr_err("led class register fail!");
 		return ret;
 	}
-	pr_info("%s devm_led_classdev_register ok! ", s_led->conf.cdev.name);
-
-	ret = snprintf(s_led->debug.buffer + strlen(s_led->debug.buffer),
-		4095 - strlen(s_led->debug.buffer),
-		"[Light] Set %s directly ", s_led->conf.cdev.name);
-	if (ret < 0 || ret >= 4096)
-		pr_info("print log init error!");
+	pr_debug("%s devm_led_classdev_register ok! ", s_led->conf.cdev.name);
 
 	led_level_set(&s_led->conf.cdev, s_led->conf.cdev.brightness);
 	return 0;
@@ -318,7 +263,7 @@ static int mtk_leds_parse_dt(struct device *dev,
 
 	leds_np = of_find_node_by_name(dev->of_node, "backlight");
 	if (!leds_np) {
-		pr_info("Error load dts node, node name error!");
+		pr_err("Error load dts node, node name error!");
 		ret = -EINVAL;
 		return ret;
 	}
@@ -329,14 +274,14 @@ static int mtk_leds_parse_dt(struct device *dev,
 		ret = of_property_read_string(child, "label",
 			&s_led->conf.cdev.name);
 		if (ret) {
-			pr_info("Fail to read label property");
+			pr_err("Fail to read label property");
 			ret = -EINVAL;
 			goto out_led_dt;
 		}
 		ret = of_property_read_u32(child,
 			"led-bits", &(s_led->conf.led_bits));
 		if (ret) {
-			pr_info("No led-bits, use default value 8");
+			pr_warn("No led-bits, use default value 8");
 			s_led->conf.led_bits = 8;
 		}
 		s_led->conf.cdev.max_brightness =
@@ -344,14 +289,14 @@ static int mtk_leds_parse_dt(struct device *dev,
 		ret = of_property_read_u32(child,
 			"trans-bits", &(s_led->conf.trans_bits));
 		if (ret) {
-			pr_info("No trans-bits, use default value 10");
+			pr_warn("No trans-bits, use default value 10");
 			s_led->conf.trans_bits = 10;
 		}
 		ret = of_property_read_u32(child,
 			"max-brightness", &(s_led->conf.max_level));
 		if (ret) {
 			s_led->conf.max_level = s_led->conf.cdev.max_brightness;
-			pr_info("No max-brightness, use default: %d",
+			pr_warn("No max-brightness, use default: %d",
 				s_led->conf.max_level);
 		}
 		ret = of_property_read_string(child, "default-state", &state);
@@ -365,7 +310,7 @@ static int mtk_leds_parse_dt(struct device *dev,
 		} else {
 			level = s_led->conf.cdev.max_brightness;
 		}
-		pr_info("parse %d leds dt: %s, %d, %d",
+		pr_debug("parse %d leds dt: %s, %d, %d",
 			num, s_led->conf.cdev.name,
 			s_led->conf.max_level,
 			s_led->conf.led_bits);
@@ -381,10 +326,9 @@ static int mtk_leds_parse_dt(struct device *dev,
 		num++;
 	}
 	m_leds->nums = num;
-	pr_info("load dts ok!");
 	return 0;
 out_led_dt:
-	pr_notice("Error load dts node!");
+	pr_err("Error load dts node!");
 	of_node_put(child);
 	return ret;
 }
@@ -401,10 +345,8 @@ static int mtk_leds_probe(struct platform_device *pdev)
 	struct mtk_leds_info *m_leds;
 	int ret, nums;
 
-	pr_info("probe begain +++");
-
 	nums = of_get_child_count(dev->of_node);
-	pr_info("Load dts node nums: %d", nums);
+	pr_debug("Load dts node nums: %d", nums);
 	m_leds = devm_kzalloc(dev, (sizeof(struct mtk_leds_info) +
 		(sizeof(struct mtk_led_data) * (nums))), GFP_KERNEL);
 	if (!m_leds) {
@@ -422,18 +364,17 @@ static int mtk_leds_probe(struct platform_device *pdev)
 
 	ret = mtk_leds_parse_dt(&(pdev->dev), m_leds);
 	if (ret) {
-		pr_notice("Failed to parse devicetree!\n");
+		pr_err("Failed to parse devicetree!\n");
 		goto err;
 	}
 
 	platform_set_drvdata(pdev, m_leds);
 	m_leds->dev = dev;
 
-	pr_info("probe end ---");
 
 	return ret;
  err:
-	pr_notice("Failed to probe!");
+	pr_err("Failed to probe!");
 	return ret;
 }
 
@@ -460,8 +401,6 @@ static void mtk_leds_shutdown(struct platform_device *pdev)
 {
 	int i;
 	struct mtk_leds_info *m_leds = dev_get_platdata(&pdev->dev);
-
-	pr_info("Turn off backlight\n");
 
 	for (i = 0; m_leds && i < m_leds->nums; i++) {
 		if (!&(m_leds->leds[i]))
@@ -496,11 +435,10 @@ static int __init mtk_leds_init(void)
 {
 	int ret;
 
-	pr_info("Leds init");
 	ret = platform_driver_register(&mtk_disp_leds_driver);
 
 	if (ret) {
-		pr_info("driver register error: %d", ret);
+		pr_err("driver register error: %d", ret);
 		return ret;
 	}
 

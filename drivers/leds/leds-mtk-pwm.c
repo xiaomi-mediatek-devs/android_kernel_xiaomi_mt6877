@@ -88,7 +88,7 @@ static DEFINE_MUTEX(leds_mutex);
 
 #define LEDS_DRV_TAG "[LED_DRV]"
 #define LEDS_DRV_INFO(format, args...) \
-	pr_info("%s:%s() line-%d: " format,	\
+	pr_debug("%s:%s() line-%d: " format,	\
 		LEDS_DRV_TAG, __func__, __LINE__, ## args)
 
 static void led_debug_log(struct mtk_led_data *s_led,
@@ -111,7 +111,6 @@ static void led_debug_log(struct mtk_led_data *s_led,
 	s_led->debug.count++;
 
 	if (ret < 0 || ret >= 4096) {
-		pr_info("print log error!");
 		s_led->debug.count = 5;
 	}
 
