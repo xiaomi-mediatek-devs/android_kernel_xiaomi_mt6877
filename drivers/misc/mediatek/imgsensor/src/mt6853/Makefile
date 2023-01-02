@@ -50,16 +50,7 @@ endif
 endef
 
 $(foreach drv,$(subst $\",,$(CONFIG_CUSTOM_KERNEL_IMGSENSOR)),$(eval $(call FILTER_DRV,$(drv))))
-ifneq ($(common_drv),)
-$(info imgsensor drv by common $(common_drv))
-endif
 obj-y				+= $(common_drv)
-ifneq ($(platform_drv),)
-$(info imgsensor drv by platform $(platform_drv))
-endif
-
-$(info imgsensor drv by platform $(project_drv))
-
 obj-y				+= $(platform_drv)
 
 ifeq (,$(wildcard $(IMGSENSOR_DRIVER_PATH)/$(CONFIG_MTK_PLATFORM_SENSOR)/camera_project/$(ARCH_MTK_PROJECT)/camera_hw))
@@ -93,11 +84,6 @@ else
 obj-y += seninf/
 endif
 subdir-ccflags-y += -I$(IMGSENSOR_DRIVER_PATH)/$(CONFIG_MTK_PLATFORM_SENSOR)/seninf/
-
-
-
-$(info imgsensor subdir-ccflags-y = $(subdir-ccflags-y))
-
 
 ifeq ($(ARCH_MTK_PROJECT), k6853v1_64_6360_alpha)
 subdir-ccflags-y += -DNEED_LATE_INITCALL
