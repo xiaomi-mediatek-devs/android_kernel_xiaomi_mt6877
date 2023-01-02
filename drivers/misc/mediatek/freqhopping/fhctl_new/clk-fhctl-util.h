@@ -24,7 +24,7 @@ do { \
 	val = ((tv & (field)) >> (ffs(field) - 1)); \
 } while (0)
 
-#define FHDBG(fmt, args...) pr_notice("[FHCTL], <%s(), %d> " fmt, __func__, __LINE__, ## args)
+#define FHDBG(fmt, args...) pr_debug("[FHCTL], <%s(), %d> " fmt, __func__, __LINE__, ## args)
 #define FHDBG_LIMIT(FREQ, fmt, args...) do {\
 	static DEFINE_RATELIMIT_STATE(ratelimit, HZ, FREQ);\
 	static int skip_cnt;\
