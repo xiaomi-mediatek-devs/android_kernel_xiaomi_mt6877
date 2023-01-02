@@ -64,33 +64,8 @@ static bool smi_sspm_ipi_register;
 #define pr_fmt(fmt) "[" DEV_NAME "]" fmt
 
 #define SMIDBG(string, args...) pr_debug(string, ##args)
-
-#if IS_ENABLED(CONFIG_MTK_CMDQ_MBOX_EXT)
-#include <cmdq-util.h>
-#define SMIWRN(cmdq, string, args...) \
-	do { \
-		if (cmdq != 0) \
-			cmdq_util_msg(string, ##args); \
-		else \
-			pr_warn(string, ##args); \
-	} while (0)
-#elif IS_ENABLED(CONFIG_MTK_CMDQ)
-#include <cmdq_helper_ext.h>
-#define SMIWRN(cmdq, string, args...) \
-	do { \
-		if (cmdq != 0) \
-			cmdq_core_save_first_dump(string, ##args); \
-		pr_warn(string, ##args); \
-	} while (0)
-#else
-#define SMIWRN(cmdq, string, args...) pr_warn(string, ##args)
-#endif
-
-#define SMIERR(string, args...) \
-	do { \
-		pr_err(string, ##args); \
-		aee_kernel_warning(DEV_NAME, string, ##args); \
-	} while (0)
+#define SMIWRN(cmdq, string, args...) pr_debug(string, ##args)
+#define SMIERR(string, args...) pr_err(string, ##args)
 
 #ifndef ATOMR_CLK
 #define ATOMR_CLK(i) atomic_read(&(smi_dev[(i)]->clk_cnts))
