@@ -9,8 +9,6 @@ INCS = -I ../ \
 
 LIBS = -lpthread
 
-$(info INCS = $(INCS))
-
 SRCS = ut_fs_test.c \
 	   ../frame_sync.c \
 	   ../frame_sync_algo.c \
