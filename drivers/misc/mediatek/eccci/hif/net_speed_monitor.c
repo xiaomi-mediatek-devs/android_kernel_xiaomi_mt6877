@@ -360,7 +360,7 @@ static void dvfs_cal_for_md_net(u64 dl_speed, u64 ul_speed)
 		/* CPU affinity setting */
 		s_isr_affinity = s_ul_ref.irq_affinity & s_dl_ref.irq_affinity;
 		if (!s_isr_affinity) {
-			pr_info("[SPD]ISR affinity: [ul:%x|dl:%x]\r\n",
+			pr_debug("[SPD]ISR affinity: [ul:%x|dl:%x]\r\n",
 				s_ul_ref.irq_affinity,
 				s_dl_ref.irq_affinity);
 			s_isr_affinity = 0xFF;
@@ -368,7 +368,7 @@ static void dvfs_cal_for_md_net(u64 dl_speed, u64 ul_speed)
 		s_task_affinity =
 			s_ul_ref.task_affinity & s_dl_ref.task_affinity;
 		if (!s_task_affinity) {
-			pr_info("[SPD]Task affinity: [ul:%x|dl:%x]\r\n",
+			pr_debug("[SPD]Task affinity: [ul:%x|dl:%x]\r\n",
 				s_ul_ref.task_affinity,
 				s_dl_ref.task_affinity);
 			s_task_affinity = 0xFF;
@@ -395,7 +395,7 @@ static void dvfs_cal_for_md_net(u64 dl_speed, u64 ul_speed)
 	if (0) {
 		get_speed_str(dl_speed, s_dl_speed_str, 32);
 		get_speed_str(ul_speed, s_ul_speed_str, 32);
-		pr_info("[SPD]UL[%d:%s], DL[%d:%s]{c0:%d|c1:%d|c2:%d|c3:%d|d:%d|i:0x%x|p:0x%x|r:0x%x}\r\n",
+		pr_debug("[SPD]UL[%d:%s], DL[%d:%s]{c0:%d|c1:%d|c2:%d|c3:%d|d:%d|i:0x%x|p:0x%x|r:0x%x}\r\n",
 				ul_idx, s_ul_speed_str, dl_idx, s_dl_speed_str,
 				s_final_cpu_freq[0], s_final_cpu_freq[1],
 				s_final_cpu_freq[2], s_final_cpu_freq[3],

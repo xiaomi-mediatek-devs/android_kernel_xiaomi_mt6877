@@ -31,7 +31,7 @@ static ssize_t ccci_sib_read(struct file *file, char __user *buf,
 	if (copy_to_user(buf,
 			ccci_sib.base_ap_view_vir + read_pos,
 			read_len)) {
-		pr_notice("[ccci0/util]ccci_sib: copy_to_user fail\n");
+		pr_err("[ccci0/util]ccci_sib: copy_to_user fail\n");
 		return -EFAULT;
 	}
 	*read_ptr = read_pos + read_len;
@@ -94,7 +94,7 @@ static void ccci_sib_smem_remap(void)
 	ccci_sib.base_ap_view_vir =
 		ccci_map_phy_addr(md_sib_mem_addr, md_sib_mem_size);
 	ccci_sib.base_md_view_phy = 0;
-	pr_notice(
+	pr_debug(
 		"[ccci0/util]md sib mem info: (0x%llx 0x%llx %p %d)\n",
 		(unsigned long long)ccci_sib.base_ap_view_phy,
 		(unsigned long long)ccci_sib.base_md_view_phy,
@@ -108,7 +108,7 @@ void ccci_sib_init(void)
 
 	ccci_sib_proc = proc_create("ccci_sib", 0440, NULL, &ccci_sib_fops);
 	if (ccci_sib_proc == NULL) {
-		pr_notice("[ccci0/util]fail to create proc entry for sib dump\n");
+		pr_err("[ccci0/util]fail to create proc entry for sib dump\n");
 		return;
 	}
 	ccci_sib_smem_remap();
