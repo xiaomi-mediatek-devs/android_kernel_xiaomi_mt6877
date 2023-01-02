@@ -23,18 +23,6 @@
 
 #include "tick-internal.h"
 
-#define CONFIG_MTK_TICK_BROADCAST_AEE_DUMP
-
-#ifdef CONFIG_MTK_AEE_IPANIC
-#if defined(CONFIG_MTK_TICK_BROADCAST_AEE_DUMP)
-#include <linux/cpumask.h>
-#include <linux/sched/clock.h>
-#include <mt-plat/mboot_params.h>
-
-#define _MTK_TICK_BROADCAST_AEE_DUMP
-#endif
-#endif
-
 /*
  * Broadcast support for broken x86 hardware, where the local apic
  * timer stops in C3 state.
