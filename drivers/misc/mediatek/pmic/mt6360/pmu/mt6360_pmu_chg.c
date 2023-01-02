@@ -1263,12 +1263,12 @@ static int mt6360_run_aicc(struct charger_device *chg_dev, u32 *uA)
 	/* check MIVR stat is act */
 	ret = mt6360_pmu_reg_read(mpci->mpi, MT6360_PMU_CHG_STAT1);
 	if (ret < 0) {
-		dev_err(mpci->dev, "%s: read mivr stat fail\n", __func__);
+		dev_dbg(mpci->dev, "%s: read mivr stat fail\n", __func__);
 		return ret;
 	}
 	mivr_stat = (ret & MT6360_MASK_MIVR_EVT) ? true : false;
 	if (!mivr_stat) {
-		dev_err(mpci->dev, "%s: mivr stat not act\n", __func__);
+		dev_dbg(mpci->dev, "%s: mivr stat not act\n", __func__);
 		return ret;
 	}
 
