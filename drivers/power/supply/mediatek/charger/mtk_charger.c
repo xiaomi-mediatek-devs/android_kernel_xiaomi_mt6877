@@ -283,7 +283,7 @@ int charger_manager_enable_high_voltage_charging(
 	else if (en && consumer->hv_charging_disabled == true)
 		consumer->hv_charging_disabled = false;
 	else {
-		pr_info("[%s] already set: %d %d\n", __func__,
+		pr_warn("[%s] already set: %d %d\n", __func__,
 			consumer->hv_charging_disabled, en);
 		return 0;
 	}
@@ -299,9 +299,6 @@ int charger_manager_enable_high_voltage_charging(
 			info->enable_hv_charging = true;
 	}
 	mutex_unlock(&consumer_mutex);
-
-	pr_info("%s: user: %s, en = %d\n", __func__, dev_name(consumer->dev),
-		info->enable_hv_charging);
 
 	if (mtk_pe50_get_is_connect(info) && !info->enable_hv_charging)
 		mtk_pe50_stop_algo(info, true);
@@ -350,7 +347,7 @@ int charger_manager_enable_power_path(struct charger_consumer *consumer,
 		goto out;
 	}
 
-	pr_info("%s: enable power path = %d\n", __func__, en);
+	pr_debug("%s: enable power path = %d\n", __func__, en);
 	ret = charger_dev_enable_powerpath(chg_dev, en);
 out:
 	mutex_unlock(&info->pp_lock[idx]);
@@ -857,7 +854,7 @@ void mtk_charger_get_atm_mode(struct charger_manager *info)
 			info->atm_enabled = true;
 	}
 end:
-	pr_info("%s: atm_enabled = %d\n", __func__, info->atm_enabled);
+	pr_debug("%s: atm_enabled = %d\n", __func__, info->atm_enabled);
 }
 
 /* internal algorithm common function */
