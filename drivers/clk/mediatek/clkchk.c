@@ -183,7 +183,7 @@ static void mtk_clk_check_muxes(void)
 		if (!name)
 			continue;
 
-		pr_notice("name: %s\n", name);
+		pr_debug("name: %s\n", name);
 		clk = __clk_lookup(name);
 		clk_notifier_register(clk, &mtk_clk_notifier);
 	}
