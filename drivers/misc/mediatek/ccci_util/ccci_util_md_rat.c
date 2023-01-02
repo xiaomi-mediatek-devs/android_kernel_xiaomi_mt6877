@@ -359,23 +359,23 @@ int set_soc_md_rt_rat_by_idx(int md_id, unsigned int wm_idx)
 		return -1;
 
 	if (wm_idx >= ARRAY_SIZE(md_rat_map)) {
-		pr_info("CCCI: %s get not support wm_idx:%u\n", __func__, wm_idx);
+		pr_debug("CCCI: %s get not support wm_idx:%u\n", __func__, wm_idx);
 		return -1;
 	}
 	rat_bitmap = md_rat_map[wm_idx];
 	if (!rat_bitmap) {
-		pr_info("CCCI: %s get invalid wm_idx:%u\n", __func__, wm_idx);
+		pr_debug("CCCI: %s get invalid wm_idx:%u\n", __func__, wm_idx);
 		return -1;
 	}
 
 	if ((rat_bitmap & cap) != rat_bitmap) {
-		pr_info("CCCI:%s: md img cap not support wm_idx: %u [c:0x%x|s:0x%x]\n",
+		pr_debug("CCCI:%s: md img cap not support wm_idx: %u [c:0x%x|s:0x%x]\n",
 				__func__, wm_idx, cap, rat_bitmap);
 		return -1;
 	}
 
 	set_soc_md_rt_rat(md_id, rat_bitmap, wm_idx);
-	pr_info("CCCI:%s:wm_idx[%u][c:0x%x|s:0x%x]\n", __func__, wm_idx, cap, rat_bitmap);
+	pr_debug("CCCI:%s:wm_idx[%u][c:0x%x|s:0x%x]\n", __func__, wm_idx, cap, rat_bitmap);
 
 	return 0;
 }
@@ -389,19 +389,19 @@ int set_soc_md_rt_rat_str(int md_id, char str[])
 	id = get_rat_id_by_bitmap(cap);
 
 	if (id == 0) {
-		pr_info("CCCI: %s: should not run to here.MD cap not in support list!\n",
+		pr_debug("CCCI: %s: should not run to here.MD cap not in support list!\n",
 			__func__);
 		return -1;
 	}
 
 	if (!str) {
-		pr_info("CCCI: %s get NULL ptr!\n", __func__);
+		pr_err("CCCI: %s get NULL ptr!\n", __func__);
 		set_soc_md_rt_rat(md_id, cap, id);
 		return 1;
 	}
 
 	if (strlen(str) == 0) {
-		pr_info("CCCI: %s str empty, set default value!\n", __func__);
+		pr_warn("CCCI: %s str empty, set default value!\n", __func__);
 		set_soc_md_rt_rat(md_id, cap, id);
 		return 1;
 	}
@@ -418,13 +418,13 @@ int set_soc_md_rt_rat_str(int md_id, char str[])
 	prefer = find_prefer_val(rat_bitmap, &id);
 
 	if ((prefer == 0) || ((prefer & cap) != prefer)) {
-		pr_info("CCCI:%s:rat[%s](r:0x%x|p:0x%x|c:0x%x) not support!\n",
+		pr_debug("CCCI:%s:rat[%s](r:0x%x|p:0x%x|c:0x%x) not support!\n",
 				__func__, str, rat_bitmap, prefer, cap);
 		set_soc_md_rt_rat(md_id, cap, id);
 		return 1;
 	}
 	set_soc_md_rt_rat(md_id, prefer, id);
-	pr_info("CCCI:%s:rat[%s](r:0x%x|p:0x%x|c:0x%x)[%u]\n",
+	pr_debug("CCCI:%s:rat[%s](r:0x%x|p:0x%x|c:0x%x)[%u]\n",
 				__func__, str, rat_bitmap, prefer, cap, id);
 	return 0;
 }

@@ -39,25 +39,13 @@ extern int ccci_dump_write(int md_id, int buf_type,
 /*--------------------------------------------------------------------------*/
 /* This is used for log to mobile log or uart log */
 #define CCCI_LEGACY_DBG_LOG(idx, tag, fmt, args...) \
-do { \
-	if (ccci_debug_enable == CCCI_LOG_ALL_MOBILE) \
-		pr_debug("[ccci%d/" tag "]" fmt, (idx+1), ##args); \
-	else if (ccci_debug_enable == CCCI_LOG_ALL_UART) \
-		pr_info("[ccci%d/" tag "]" fmt, (idx+1), ##args); \
-} while (0)
+	pr_debug("[ccci%d/" tag "]" fmt, (idx+1), ##args);
 
 #define CCCI_LEGACY_ALWAYS_LOG(idx, tag, fmt, args...) \
-do { \
-	if (ccci_debug_enable == CCCI_LOG_ALL_MOBILE \
-		|| ccci_debug_enable == CCCI_LOG_CRITICAL_MOBILE) \
-		pr_debug("[ccci%d/" tag "]" fmt, (idx+1), ##args); \
-	else if (ccci_debug_enable == CCCI_LOG_ALL_UART \
-			|| ccci_debug_enable == CCCI_LOG_CRITICAL_UART) \
-		pr_info("[ccci%d/" tag "]" fmt, (idx+1), ##args); \
-} while (0)
+	pr_debug("[ccci%d/" tag "]" fmt, (idx+1), ##args);
 
 #define CCCI_LEGACY_ERR_LOG(idx, tag, fmt, args...) \
-	pr_notice("[ccci%d/" tag "]" fmt, (idx+1), ##args)
+	pr_err("[ccci%d/" tag "]" fmt, (idx+1), ##args)
 
 /*--------------------------------------------------------------------------*/
 /* This log is used for driver init and part of first boot up log */
