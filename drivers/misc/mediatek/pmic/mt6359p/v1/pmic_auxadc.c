@@ -187,7 +187,7 @@ static int wk_bat_temp_dbg(int bat_temp_prev, int bat_temp)
 	unsigned short i;
 
 	vbif28 = auxadc_priv_read_channel(pmic_auxadc_dev, AUXADC_VBIF);
-	pr_notice("BAT_TEMP_PREV:%d,BAT_TEMP:%d,VBIF28:%d\n",
+	pr_debug("BAT_TEMP_PREV:%d,BAT_TEMP:%d,VBIF28:%d\n",
 		bat_temp_prev, bat_temp, vbif28);
 	if (bat_temp < 200 || abs(bat_temp_prev - bat_temp) > 100) {
 		wk_auxadc_dbg_dump();
@@ -208,11 +208,11 @@ static int wk_bat_temp_dbg(int bat_temp_prev, int bat_temp)
 			arr_bat_temp[i] =
 				auxadc_priv_read_channel(pmic_auxadc_dev,
 							 AUXADC_BAT_TEMP);
-			pr_notice("[CH3_DBG] %d,%d\n",
+			pr_debug("[CH3_DBG] %d,%d\n",
 				  vbat, arr_bat_temp[i]);
 		}
 		bat_temp_new = bat_temp_filter(arr_bat_temp, 5);
-		pr_notice("Final BAT_TEMP_NEW:%d\n", bat_temp_new);
+		pr_debug("Final BAT_TEMP_NEW:%d\n", bat_temp_new);
 	}
 	return bat_temp_new;
 }
@@ -475,7 +475,7 @@ int pmic_get_auxadc_value(int list)
 #endif
 		if (is_charging == 0)
 			bat_cur = 0 - bat_cur;
-		pr_notice("[CH3_DBG] bat_cur = %d\n", bat_cur);
+		pr_debug("[CH3_DBG] bat_cur = %d\n", bat_cur);
 	}
 	if (list == AUXADC_LIST_HPOFS_CAL) {
 		ret = iio_read_channel_raw(
