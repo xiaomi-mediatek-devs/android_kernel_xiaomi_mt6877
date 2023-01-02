@@ -286,6 +286,7 @@ unsigned int __spm_output_wake_reason(const struct wake_status *wakesta,
 	}
 	WARN_ON(strlen(buf) >= LOG_BUF_SIZE);
 
+#ifdef DEBUG
 	log_size += sprintf(log_buf,
 	"wake up by %s, timer_out = %u, r13 = 0x%x, debug_flag = 0x%x 0x%x, ",
 		  buf, wakesta->timer_out, wakesta->r13,
@@ -308,6 +309,7 @@ unsigned int __spm_output_wake_reason(const struct wake_status *wakesta,
 	WARN_ON(log_size >= 1024);
 
 	spm_print(suspend, "%s", log_buf);
+#endif
 
 	return wr;
 }
