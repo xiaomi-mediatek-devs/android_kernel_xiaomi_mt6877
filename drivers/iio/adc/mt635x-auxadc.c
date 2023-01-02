@@ -878,7 +878,7 @@ static int mt635x_auxadc_read_raw(struct iio_dev *indio_dev,
 	if (chan->channel == AUXADC_IMP)
 		ret = IIO_VAL_INT_MULTIPLE;
 	if (__ratelimit(&ratelimit)) {
-		dev_info(adc_dev->dev,
+		dev_dbg(adc_dev->dev,
 			"name:%s, channel=%d, adc_out=0x%x, adc_result=%d\n",
 			auxadc_chan->ch_name, auxadc_chan->ch_num,
 			auxadc_out, *val);
@@ -1137,12 +1137,12 @@ static int auxadc_get_data_from_dt(struct mt635x_auxadc_device *adc_dev,
 
 	ret = of_property_read_u32(node, "channel", channel);
 	if (ret) {
-		dev_notice(adc_dev->dev,
+		dev_err(adc_dev->dev,
 			"invalid channel in node:%s\n", node->name);
 		return ret;
 	}
 	if (*channel < AUXADC_CHAN_MIN || *channel > AUXADC_CHAN_MAX) {
-		dev_notice(adc_dev->dev,
+		dev_err(adc_dev->dev,
 			"invalid channel number %d in node:%s\n",
 			*channel, node->name);
 		return ret;
@@ -1234,7 +1234,7 @@ static int mt635x_auxadc_probe(struct platform_device *pdev)
 
 	ret = auxadc_parse_dt(adc_dev, node);
 	if (ret < 0) {
-		dev_notice(&pdev->dev, "auxadc_parse_dt fail, ret=%d\n", ret);
+		dev_err(&pdev->dev, "auxadc_parse_dt fail, ret=%d\n", ret);
 		return ret;
 	}
 
@@ -1263,7 +1263,7 @@ static int mt635x_auxadc_probe(struct platform_device *pdev)
 		break;
 	}
 #endif
-	dev_info(&pdev->dev, "%s done\n", __func__);
+	dev_dbg(&pdev->dev, "%s done\n", __func__);
 
 	return 0;
 }
