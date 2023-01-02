@@ -211,13 +211,12 @@ static void led_debug_log(struct mtk_led_data *s_led, int level)
 	s_led->debug.count++;
 
 	if (ret < 0 || ret >= 4096) {
-		dev_info(s_led->conf.cdev.dev, "[ERROR] print log error!");
 		s_led->debug.count = 5;
 	}
 
 	if (level == 0 || s_led->debug.count >= 5 ||
 		(s_led->debug.current_t - s_led->debug.last_t) > 1000000000) {
-		dev_info(s_led->conf.cdev.dev, "%s", s_led->debug.buffer);
+		dev_dbg(s_led->conf.cdev.dev, "%s", s_led->debug.buffer);
 		s_led->debug.count = 0;
 		s_led->debug.buffer[strlen("[Light] Set directly ") +
 			strlen(s_led->conf.cdev.name)] = '\0';
