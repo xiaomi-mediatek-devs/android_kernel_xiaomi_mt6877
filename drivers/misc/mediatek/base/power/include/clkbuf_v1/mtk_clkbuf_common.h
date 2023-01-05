@@ -33,12 +33,7 @@
 #endif
 #define pr_fmt(fmt) "[Power/clkbuf] " fmt
 
-#define clk_buf_pr_dbg(fmt, args...)			\
-	do {						\
-		if (clkbuf_debug)			\
-			pr_info(fmt, ##args);		\
-	} while (0)
-
+#define clk_buf_pr_dbg(fmt, args...)
 #define clkbuf_readl(addr)			__raw_readl(addr)
 #define clkbuf_writel(addr, val)	mt_reg_sync_writel(val, addr)
 

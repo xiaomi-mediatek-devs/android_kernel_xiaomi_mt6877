@@ -241,7 +241,7 @@ static void pmic_clk_buf_ctrl(enum CLK_BUF_SWCTRL_STATUS_T *status)
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
 	clkbuf_read_pmic(PMIC_DCXO_CW11, &pmic_cw11,
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
-	pr_info("%s DCXO_CW00=0x%x, CW11=0x%x, clk_buf_swctrl=[%u %u %u %u %u %u %u]\n",
+	pr_debug("%s DCXO_CW00=0x%x, CW11=0x%x, clk_buf_swctrl=[%u %u %u %u %u %u %u]\n",
 		__func__, pmic_cw00, pmic_cw11, status[0], status[1],
 		status[2], status[3], status[4], status[5], status[6]);
 }
@@ -680,7 +680,7 @@ void clk_buf_dump_clkbuf_log(void)
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
 	clkbuf_read_pmic(PMIC_RG_SRCLKEN_IN3_EN_ADDR, &top_spi_con1,
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
-	pr_info("%s DCXO_CW00/02/11/13/14/15/16/20/top_spi_con1=0x%x %x %x %x %x %x %x %x %x\n",
+	pr_debug("%s DCXO_CW00/02/11/13/14/15/16/20/top_spi_con1=0x%x %x %x %x %x %x %x %x %x\n",
 		     __func__, pmic_cw00, pmic_cw02, pmic_cw11, pmic_cw13,
 		     pmic_cw14, pmic_cw15, pmic_cw16, pmic_cw20,
 		     top_spi_con1);

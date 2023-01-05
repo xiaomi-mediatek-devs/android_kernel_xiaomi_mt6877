@@ -207,13 +207,7 @@ void __spm_get_wakeup_status(struct wake_status *wakesta)
 	wakesta->isr = spm_read(SPM_IRQ_STA);
 }
 
-#define spm_print(suspend, fmt, args...)	\
-do {						\
-	if (!suspend)				\
-		spm_debug(fmt, ##args);		\
-	else					\
-		spm_crit2(fmt, ##args);		\
-} while (0)
+#define spm_print(suspend, fmt, args...)
 
 void rekick_vcorefs_scenario(void)
 {
