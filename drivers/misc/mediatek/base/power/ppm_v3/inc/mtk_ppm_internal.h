@@ -107,35 +107,19 @@ static const struct file_operations ppm_ ## name ## _proc_fops = {            \
 #undef TAG
 #define TAG     "[Power/PPM] "
 
-#define ppm_err			ppm_info
-#define ppm_warn		ppm_info
-#define ppm_info(fmt, args...)	pr_notice(TAG""fmt, ##args)
-#define ppm_dbg(type, fmt, args...)				\
-	do {							\
-		if (ppm_debug & ALL || ppm_debug & type)	\
-			ppm_info(fmt, ##args);			\
-		else if (type == MAIN)				\
-			pr_debug(TAG""fmt, ##args);		\
-	} while (0)
-#define ppm_ver(fmt, args...)			\
-	do {					\
-		if (ppm_debug == ALL)		\
-			ppm_info(fmt, ##args);	\
-	} while (0)
-
+#define ppm_err(fmt, args...) pr_err(TAG""fmt, ##args)
+#define ppm_warn(fmt, args...) pr_warn(TAG""fmt, ##args)
+#define ppm_info(fmt, args...)
+#define ppm_dbg(type, fmt, args...)
+#define ppm_ver(fmt, args...)
 
 #define FUNC_LV_MODULE		BIT(0)	/* module, platform driver interface */
 #define FUNC_LV_API		BIT(1)	/* mt_ppm driver global function */
 #define FUNC_LV_MAIN		BIT(2)	/* mt_ppm driver main function */
 #define FUNC_LV_POLICY		BIT(4)	/* mt_ppm driver policy function */
 
-#define FUNC_ENTER(lv)	\
-	do { if ((lv) & ppm_func_lv_mask)	\
-		ppm_info(">> %s()\n", __func__); } while (0)
-#define FUNC_EXIT(lv)	\
-	do { if ((lv) & ppm_func_lv_mask)	\
-		ppm_info("<< %s():%d\n", __func__, __LINE__); } while (0)
-
+#define FUNC_ENTER(lv)
+#define FUNC_EXIT(lv)
 
 /*==============================================================*/
 /* Enum                                                         */

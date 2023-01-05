@@ -18,14 +18,10 @@
 #define pr_fmt(fmt) TAG " : " fmt
 
 #define dcm_pr_err(fmt, args...)		pr_err(fmt, ##args)
-#define dcm_pr_warn(fmt, args...)		pr_warn(fmt, ##args)
-#define dcm_pr_info_limit(fmt, args...)		pr_info_ratelimited(fmt, ##args)
-#define dcm_pr_info(fmt, args...)		pr_info(fmt, ##args)
-#define dcm_pr_dbg(fmt, args...)			\
-	do {						\
-		if (dcm_debug)				\
-			pr_info(fmt, ##args);	\
-	} while (0)
+#define dcm_pr_warn(fmt, args...)		pr_debug(fmt, ##args)
+#define dcm_pr_info_limit(fmt, args...)		pr_debug_ratelimited(fmt, ##args)
+#define dcm_pr_info(fmt, args...)		pr_debug(fmt, ##args)
+#define dcm_pr_dbg(fmt, args...)
 
 /** macro **/
 #define and(v, a) ((v) & (a))

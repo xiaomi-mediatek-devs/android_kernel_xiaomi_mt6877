@@ -138,7 +138,7 @@ static int vcore_power_array_size(int idx)
 		return VCORE_POWER_ARRAY_SIZE(0);
 	}
 
-	pr_info("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
+	pr_debug("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
 	return 0;
 };
 
@@ -149,7 +149,7 @@ static int *vcore_power_gain_ptr(int idx)
 		return VCORE_POWER_GAIN_PTR(0);
 	}
 
-	pr_info("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
+	pr_debug("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
 	return NULL;
 };
 
@@ -308,7 +308,7 @@ static unsigned int *_cpu_power_gain_ptr(int isUP, int isLow, int idx)
 		break;
 	}
 
-	pr_info("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
+	pr_debug("#@# %s(%d) warning value %d\n", __func__, __LINE__, idx);
 	return NULL;
 };
 
