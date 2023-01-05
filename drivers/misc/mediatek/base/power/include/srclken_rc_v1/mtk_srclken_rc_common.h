@@ -33,11 +33,7 @@
 #endif
 #define pr_fmt(fmt) "[Power/srclken] " fmt
 
-#define srclken_dbg(fmt, args...)			\
-	do {						\
-		if (srclken_get_debug_cfg())			\
-			pr_info(fmt, ##args);		\
-	} while (0)
+#define srclken_dbg(fmt, args...)
 
 #define srclken_read(addr)		\
 		__raw_readl((void __force __iomem *)(addr))

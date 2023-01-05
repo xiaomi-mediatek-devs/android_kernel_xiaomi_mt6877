@@ -567,7 +567,7 @@ static void pmic_clk_buf_ctrl(enum CLK_BUF_SWCTRL_STATUS_T *status)
 		PMIC_REG_MASK, PMIC_REG_SHIFT);
 	pmic_read_interface(PMIC_DCXO_CW09, &pmic_cw09,
 		PMIC_REG_MASK, PMIC_REG_SHIFT);
-	pr_info("%s DCXO_CW00=0x%x, CW09=0x%x, clk_buf_swctrl=[%u %u %u %u 0 0 %u]\n",
+	pr_debug("%s DCXO_CW00=0x%x, CW09=0x%x, clk_buf_swctrl=[%u %u %u %u 0 0 %u]\n",
 		__func__, pmic_cw00, pmic_cw09, status[XO_SOC], status[XO_WCN],
 		status[XO_NFC], status[XO_CEL], status[XO_EXT]);
 }
@@ -905,13 +905,13 @@ void clk_buf_dump_clkbuf_log(void)
 	pmic_read_interface(PMIC_RG_VRFCK_HV_EN_ADDR, &vrfck_hv_en,
 				PMIC_RG_VRFCK_HV_EN_MASK,
 				PMIC_RG_VRFCK_HV_EN_SHIFT);
-	pr_info("%s DCXO_CW00/08/09/10/12/13/15/19=0x%x %x %x %x %x %x %x %x\n",
+	pr_debug("%s DCXO_CW00/08/09/10/12/13/15/19=0x%x %x %x %x %x %x %x %x\n",
 		     __func__, pmic_cw00, pmic_cw08, pmic_cw09, pmic_cw10,
 		     pmic_cw12, pmic_cw13, pmic_cw15, pmic_cw19);
-	pr_info("%s in3_en/rf_op/bb_op/rf_en/bb_en=0x%x %x %x %x %x\n",
+	pr_debug("%s in3_en/rf_op/bb_op/rf_en/bb_en=0x%x %x %x %x %x\n",
 		     __func__, top_spi_con1, ldo_vrfck_op, ldo_vbbck_op,
 		     ldo_vrfck_en, ldo_vbbck_en);
-	pr_info("%s vrfck_hv_en=0x%x\n", __func__, vrfck_hv_en);
+	pr_debug("%s vrfck_hv_en=0x%x\n", __func__, vrfck_hv_en);
 }
 
 static u32 dcxo_dbg_read_auxout(u16 sel)
@@ -1557,7 +1557,7 @@ void pwrap_clk_buf_inf(void)
 		pwrap_inf = INF_DCXO;
 	else
 		pwrap_inf = INF_ERROR;
-	pr_info("%s: pwrap_inf=%d, rc_inf=0x%x, dcxo_inf=0x%x\n",
+	pr_debug("%s: pwrap_inf=%d, rc_inf=0x%x, dcxo_inf=0x%x\n",
 		__func__, pwrap_inf, rc_inf, dcxo_inf);
 #endif
 }

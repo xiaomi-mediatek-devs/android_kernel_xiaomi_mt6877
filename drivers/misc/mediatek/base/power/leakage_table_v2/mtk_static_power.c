@@ -24,7 +24,7 @@
 /* #define SPOWER_LOG_PRINT SPOWER_LOG_WITH_PRINTK */
 #define SPOWER_LOG_PRINT SPOWER_LOG_NONE
 
-#define SPOWER_INFO(fmt, args...)	 pr_info(SP_TAG fmt, ##args)
+#define SPOWER_INFO(fmt, args...)	 pr_debug(SP_TAG fmt, ##args)
 
 #if (SPOWER_LOG_PRINT == SPOWER_LOG_NONE)
 #define SPOWER_DEBUG(fmt, args...)

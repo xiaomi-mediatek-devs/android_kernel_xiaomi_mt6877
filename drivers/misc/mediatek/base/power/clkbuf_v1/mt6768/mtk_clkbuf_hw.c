@@ -498,7 +498,7 @@ static void pmic_clk_buf_ctrl(enum CLK_BUF_SWCTRL_STATUS_T *status)
 		PMIC_REG_MASK, PMIC_REG_SHIFT);
 	pmic_read_interface(PMIC_DCXO_CW11, &pmic_cw11,
 		PMIC_REG_MASK, PMIC_REG_SHIFT);
-	pr_info("%s DCXO_CW00=0x%x, CW11=0x%x, clk_buf_swctrl=[%u %u %u %u 0 0 %u]\n",
+	pr_debug("%s DCXO_CW00=0x%x, CW11=0x%x, clk_buf_swctrl=[%u %u %u %u 0 0 %u]\n",
 		__func__, pmic_cw00, pmic_cw11, status[XO_SOC], status[XO_WCN],
 		status[XO_NFC], status[XO_CEL], status[XO_EXT]);
 }
@@ -837,7 +837,7 @@ void clk_buf_dump_clkbuf_log(void)
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
 	pmic_read_interface(PMIC_DCXO_CW23, &pmic_cw23,
 			    PMIC_REG_MASK, PMIC_REG_SHIFT);
-	pr_info("%s DCXO_CW00/01/02/11/14/16/23=0x%x %x %x %x %x %x %x\n",
+	pr_debug("%s DCXO_CW00/01/02/11/14/16/23=0x%x %x %x %x %x %x %x\n",
 		     __func__, pmic_cw00, pmic_cw01, pmic_cw02, pmic_cw11,
 		     pmic_cw14, pmic_cw16, pmic_cw23);
 	pr_info("%s top_spi_con1=0x%x\n", __func__, top_spi_con1);

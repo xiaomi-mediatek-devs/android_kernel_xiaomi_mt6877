@@ -56,14 +56,8 @@
 
 #define swpm_err                swpm_info
 #define swpm_warn               swpm_info
-#define swpm_info(fmt, args...) pr_notice(TAG""fmt, ##args)
-#define swpm_dbg(fmt, args...)                           \
-	do {                                             \
-		if (swpm_debug)                          \
-			swpm_info(fmt, ##args);          \
-		else                                     \
-			pr_debug(TAG""fmt, ##args);      \
-	} while (0)
+#define swpm_info(fmt, args...) pr_debug(TAG""fmt, ##args)
+#define swpm_dbg(fmt, args...)
 
 #define swpm_readl(addr)	__raw_readl(addr)
 #define swpm_writel(addr, val)	mt_reg_sync_writel(val, addr)
