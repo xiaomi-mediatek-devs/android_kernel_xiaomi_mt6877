@@ -131,3 +131,5 @@ all.config
 
 # Kdevelop4
 *.kdev4
+
+!drivers/misc/mediatek/fpsgo_cus/src/*.o
