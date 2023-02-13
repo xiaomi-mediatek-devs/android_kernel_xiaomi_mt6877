@@ -430,6 +430,15 @@ config MTK_MERGE_INTERFACE_SUPPORT
 	  interface is set to 'y',
 	  otherwise merge interface is not used.
 
+config MTK_CONNFEM
+	tristate "MediaTek connfem driver"
+	depends on MTK_COMBO
+	help
+	  This config is used to choose
+	  if need to compile connfem folder.
+	  Will compile connfem folder if set to 'y',
+	  otherwise will not compile connfem folder.
+
 config MTK_COMBO_CHIP_DEEP_SLEEP_SUPPORT
 	depends on MTK_COMBO_CHIP_MT6632
 	default y
