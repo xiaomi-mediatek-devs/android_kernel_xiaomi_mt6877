@@ -107,7 +107,7 @@ static const struct of_device_id ufs_mtk_of_match[] = {
 extern bool clk_buf_ctrl(enum clk_buf_id id, bool onoff);
 #endif
 
-struct rpmb_dev *ufs_mtk_rpmb_get_raw_dev()
+struct rpmb_dev *ufs_mtk_rpmb_get_raw_dev(void)
 {
 	struct ufs_mtk_host *host = ufshcd_get_variant(ufs_mtk_hba);
 
