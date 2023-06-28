@@ -48,6 +48,7 @@
 
 #include "mt6359.h"
 #ifdef CONFIG_SND_JACK_INPUT_DEV_RUBY
+#include <sound/jack.h>
 #define USB_3_5_UNSUPPORT 1
 #endif
 enum {
