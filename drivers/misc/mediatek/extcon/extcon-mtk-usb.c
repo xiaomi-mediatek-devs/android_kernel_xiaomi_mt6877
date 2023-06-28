@@ -116,14 +116,14 @@ static int mtk_usb_extcon_set_role(struct mtk_extcon_info *extcon,
 }
 
 #if !defined(CONFIG_USB_MTK_HDRC)
-void mt_usb_connect()
+void mt_usb_connect(void)
 {
 	/* if (g_extcon)
 		mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_DEVICE); */
 }
 EXPORT_SYMBOL(mt_usb_connect);
 
-void mt_usb_disconnect()
+void mt_usb_disconnect(void)
 {
 	/* if (g_extcon)
 		mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_NONE); */
