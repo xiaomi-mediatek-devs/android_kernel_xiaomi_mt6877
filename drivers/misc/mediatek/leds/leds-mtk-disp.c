@@ -334,37 +334,22 @@ static int mtk_leds_parse_dt(struct device *dev,
 			ret = -EINVAL;
 			goto out_led_dt;
 		}
-#ifdef CONFIG_FACTORY_BUILD
-		ret = of_property_read_u32(child,
-			"factory-led-bits", &(s_led->conf.led_bits));
-#else
 		ret = of_property_read_u32(child,
 			"led-bits", &(s_led->conf.led_bits));
-#endif
 		if (ret) {
 			pr_info("No led-bits, use default value 8");
 			s_led->conf.led_bits = 8;
 		}
 		s_led->conf.cdev.max_brightness =
 			(1 << s_led->conf.led_bits) - 1;
-#ifdef CONFIG_FACTORY_BUILD
-		ret = of_property_read_u32(child,
-			"factory-trans-bits", &(s_led->conf.trans_bits));
-#else
 		ret = of_property_read_u32(child,
 			"trans-bits", &(s_led->conf.trans_bits));
-#endif
 		if (ret) {
 			pr_info("No trans-bits, use default value 10");
 			s_led->conf.trans_bits = 10;
 		}
-#ifdef CONFIG_FACTORY_BUILD
-		ret = of_property_read_u32(child,
-			"factory-max-brightness", &(s_led->conf.max_level));
-#else
 		ret = of_property_read_u32(child,
 			"max-brightness", &(s_led->conf.max_level));
-#endif
 		if (ret) {
 			s_led->conf.max_level = s_led->conf.cdev.max_brightness;
 			pr_info("No max-brightness, use default: %d",

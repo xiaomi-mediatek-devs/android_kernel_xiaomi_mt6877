@@ -778,10 +778,8 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 
 	if (last_bl_level == 0 && level > 0) {
 #ifdef CONFIG_MI_DISP
-#ifndef CONFIG_FACTORY_BUILD
 		if (!get_panel_dead_flag() && ctx->doze_state == 0)
 			mi_dsi_panel_tigger_dimming_work(dsi);
-#endif
 #endif
 	}
 
@@ -1047,13 +1045,9 @@ static int panel_set_doze_brightness(struct drm_panel *panel, int doze_brightnes
 {
 	int ret = 0;
 	struct lcm *ctx;
-#ifdef CONFIG_FACTORY_BUILD
-	char lcm_aod_high_mode[] = {0x51,0x07,0xFF,0x00,0x00,0x03,0xFF};
-	char lcm_aod_low_mode[] = {0x51,0x07,0xFF,0x00,0x00,0x01,0xFF};
-#else
+
 	char lcm_aod_high_mode[] = {0x51,0x00,0x00,0x00,0x00,0x03,0xFF};
 	char lcm_aod_low_mode[] = {0x51,0x00,0x00,0x00,0x00,0x01,0xFF};
-#endif
 	char lcm_aod_mode_enter[] = {0x39, 0x00};
 	char lcm_aod_mode_exit[] = {0x38, 0x00};
 
@@ -1064,12 +1058,10 @@ static int panel_set_doze_brightness(struct drm_panel *panel, int doze_brightnes
 
 	ctx = panel_to_lcm(panel);
 
-#ifndef CONFIG_FACTORY_BUILD
 	if (ctx->doze_brightness_state == doze_brightness) {
 		pr_info("%s skip same doze_brightness set:%d\n", __func__, doze_brightness);
 		return 0;
 	}
-#endif
 
 	if (DOZE_BRIGHTNESS_LBM  == doze_brightness || DOZE_BRIGHTNESS_HBM  == doze_brightness) {
 		if (cmd_msg != NULL) {
@@ -1682,9 +1674,7 @@ static void lcm_esd_restore_backlight(struct mtk_dsi *dsi, struct drm_panel *pan
 	mutex_unlock(&ctx->panel_lock);
 
 #ifdef CONFIG_MI_DISP
-#ifndef CONFIG_FACTORY_BUILD
 	mi_dsi_panel_tigger_dimming_work(dsi);
-#endif
 #endif
 
 	return;
@@ -1901,64 +1891,6 @@ static int panel_get_gir_status(struct drm_panel *panel)
 }
 #endif
 
-#ifdef CONFIG_FACTORY_BUILD
-static void panel_set_round_enable(struct drm_panel *panel, bool enable)
-{
-	struct lcm *ctx;
-	char page_change[] = {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x07};
-	char round_switch1[] = {0xC0, 0x87};
-
-	pr_info("%s: +\n", __func__);
-
-	if (!panel) {
-		pr_err("%s: panel is NULL\n", __func__);
-		goto err;
-	}
-
-	ctx = panel_to_lcm(panel);
-	if (!ctx->enabled) {
-		pr_err("%s: panel isn't enabled\n", __func__);
-	} else {
-		if (enable == true) {
-			round_switch1[1] = 0x87;
-			if (cmd_msg != NULL) {
-				cmd_msg->channel = 0;
-				cmd_msg->tx_cmd_num = 1;
-				cmd_msg->flags = ARRAY_SIZE(page_change) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->type[0] = ARRAY_SIZE(page_change) > 2 ? 0x39 : 0x15;
-				cmd_msg->tx_buf[0] = page_change;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(page_change);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-				cmd_msg->flags = MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch1) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch1;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch1);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			}
-		} else if (enable == false) {
-			round_switch1[1] = 0x86;
-			if (cmd_msg != NULL) {
-				cmd_msg->channel = 0;
-				cmd_msg->tx_cmd_num = 1;
-				cmd_msg->flags = ARRAY_SIZE(page_change) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->type[0] = ARRAY_SIZE(page_change) > 2 ? 0x39 : 0x15;
-				cmd_msg->tx_buf[0] = page_change;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(page_change);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-				cmd_msg->flags = MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch1) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch1;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch1);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			}
-		}
-	}
-
-err:
-	pr_info("%s: -\n", __func__);
-}
-#endif
-
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.panel_power_on = panel_power_on,
@@ -1997,9 +1929,6 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_set_gir_on = panel_set_gir_on,
 	.panel_set_gir_off = panel_set_gir_off,
 	.panel_get_gir_status = panel_get_gir_status,
-#endif
-#ifdef CONFIG_FACTORY_BUILD
-	.panel_set_round_enable = panel_set_round_enable,
 #endif
 };
 #endif

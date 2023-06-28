@@ -6,13 +6,8 @@
 #ifndef __MTK_CHARGER_TYPE_H__
 #define __MTK_CHARGER_TYPE_H__
 
-#ifdef CONFIG_FACTORY_BUILD
-#define SDP_ICL		600
-#define SDP_FCC		500
-#else
 #define SDP_ICL		500
 #define SDP_FCC		500
-#endif
 #define SDP_VINMIN	4200
 
 #define CDP_ICL		1500

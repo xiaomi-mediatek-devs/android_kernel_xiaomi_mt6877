@@ -1378,14 +1378,8 @@ int mi_dsi_panel_set_disp_param(struct mtk_dsi *dsi, struct disp_feature_ctl *ct
 		mi_disp_feature_event_notify_by_type(mi_get_disp_id("primary"), MI_DISP_EVENT_HBM, sizeof(ctl->feature_val), ctl->feature_val);
 		if (panel_ext->funcs->normal_hbm_control) {
 			if (ctl->feature_val == FEATURE_ON) {
-#ifdef CONFIG_FACTORY_BUILD
-				panel_ext->funcs->normal_hbm_control(dsi->panel, 1);
-#endif
 				dsi->mi_cfg.normal_hbm_flag = true;
 			} else {
-#ifdef CONFIG_FACTORY_BUILD
-				panel_ext->funcs->normal_hbm_control(dsi->panel, 0);
-#endif
 				dsi->mi_cfg.normal_hbm_flag = false;
 			}
 		}

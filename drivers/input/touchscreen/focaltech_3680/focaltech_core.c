@@ -3103,9 +3103,6 @@ static int fts_ts_suspend(struct device *dev)
 #endif
 
 	fts_esdcheck_suspend(ts_data);
-#ifdef CONFIG_FACTORY_BUILD
-	ts_data->poweroff_on_sleep = true;
-#endif
 	FTS_INFO("%s : gesture_support:%d  poweroff_on_sleep:%d ", __func__, ts_data->gesture_support, ts_data->poweroff_on_sleep);
 	if (ts_data->gesture_support && !ts_data->poweroff_on_sleep)
 		fts_gesture_suspend(ts_data);
@@ -3134,7 +3131,6 @@ static int fts_ts_resume(struct device *dev)
 
 	ts_data->suspended = false;
 
-#ifndef CONFIG_FACTORY_BUILD
 #ifdef FTS_TOUCHSCREEN_FOD
 	FTS_INFO("%s finger_in_fod:%d fod_finger_skip:%d\n", __func__, ts_data->finger_in_fod, ts_data->fod_finger_skip);
 	if (!ts_data->finger_in_fod && !ts_data->fod_finger_skip) {
@@ -3143,14 +3139,6 @@ static int fts_ts_resume(struct device *dev)
 		fts_release_all_finger();
 	}
 #endif
-#endif
-
-	if (!ts_data->ic_info.is_incell) {
-#ifdef CONFIG_FACTORY_BUILD
-		fts_reset_proc(200);
-		fts_release_all_finger();
-#endif
-	}
 
 	fts_wait_tp_to_valid();
 	fts_ex_mode_recovery(ts_data);

@@ -54,7 +54,6 @@ static int mi_cooler_brightness_clone_set_cur_state(
 		struct thermal_cooling_device *cdev,
 		unsigned long state)
 {
-#ifndef CONFIG_FACTORY_BUILD
 	struct mtk_dsi *dsi = NULL;
 	u32 max_brightness_clone = 0;
 	u32 thermal_limit_brightness_clone = 0;
@@ -74,7 +73,7 @@ static int mi_cooler_brightness_clone_set_cur_state(
 		thermal_limit_brightness_clone = max_brightness_clone * state / MAX_THERMAL_STATE;
 		mi_dsi_display_set_thermal_limit_brightness_clone(dsi, thermal_limit_brightness_clone);
 	}
-#endif
+
 	mi_cooler_brightness_clone_dprintk("%s: %d\n", __func__, state);
 
 	return 0;

@@ -729,10 +729,8 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 
 	if (last_bl_level == 0 && level > 0) {
 #ifdef CONFIG_MI_DISP
-#ifndef CONFIG_FACTORY_BUILD
 		if (!get_panel_dead_flag() && ctx->doze_state == 0)
 			mi_dsi_panel_tigger_dimming_work(dsi);
-#endif
 #endif
 	}
 
@@ -1022,12 +1020,10 @@ static int panel_set_doze_brightness(struct drm_panel *panel, int doze_brightnes
 
 	ctx = panel_to_lcm(panel);
 
-#ifndef CONFIG_FACTORY_BUILD
 	if (ctx->doze_brightness_state == doze_brightness) {
 		pr_info("%s skip same doze_brightness set:%d\n", __func__, doze_brightness);
 		return 0;
 	}
-#endif
 
 	if (DOZE_BRIGHTNESS_LBM  == doze_brightness || DOZE_BRIGHTNESS_HBM  == doze_brightness) {
 		if (cmd_msg != NULL) {
@@ -1616,9 +1612,7 @@ static void lcm_esd_restore_backlight(struct mtk_dsi *dsi, struct drm_panel *pan
 	mutex_unlock(&ctx->panel_lock);
 
 #ifdef CONFIG_MI_DISP
-#ifndef CONFIG_FACTORY_BUILD
 	mi_dsi_panel_tigger_dimming_work(dsi);
-#endif
 #endif
 
 	return;
@@ -1858,66 +1852,6 @@ static void panel_set_crc_off(struct drm_panel *panel)
 }
 #endif
 
-#ifdef CONFIG_FACTORY_BUILD
-static void panel_set_round_enable(struct drm_panel *panel, bool enable)
-{
-	struct lcm *ctx;
-	char round_switch1[] = {0xB0, 0x13};
-	char round_switch2[] = {0xB2, 0x13};
-
-	pr_info("%s: +\n", __func__);
-
-	if (!panel) {
-		pr_err("%s: panel is NULL\n", __func__);
-		goto err;
-	}
-
-	ctx = panel_to_lcm(panel);
-	if (!ctx->enabled) {
-		pr_err("%s: panel isn't enabled\n", __func__);
-	} else {
-		if (enable == true) {
-			round_switch1[1] = 0x13;
-			round_switch2[1] = 0x13;
-			lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA, 0x18);
-			if (cmd_msg != NULL) {
-				cmd_msg->channel = 0;
-				cmd_msg->flags = MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->tx_cmd_num = 1;
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch1) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch1;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch1);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch2) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch2;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch2);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			}
-		} else if (enable == false) {
-			round_switch1[1] = 0x00;
-			round_switch2[1] = 0x00;
-			lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA, 0x18);
-			if (cmd_msg != NULL) {
-				cmd_msg->channel = 0;
-				cmd_msg->flags = MIPI_DSI_MSG_USE_LPM;
-				cmd_msg->tx_cmd_num = 1;
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch1) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch1;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch1);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-				cmd_msg->type[0] = ARRAY_SIZE(round_switch2) > 2 ? 0x39 : 0x15;;
-				cmd_msg->tx_buf[0] = round_switch2;
-				cmd_msg->tx_len[0] = ARRAY_SIZE(round_switch2);
-				mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			}
-		}
-	}
-
-err:
-	pr_info("%s: -\n", __func__);
-}
-#endif
-
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.ext_param_set = mtk_panel_ext_param_set,
@@ -1956,9 +1890,6 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_get_gir_status = panel_get_gir_status,
 	.panel_set_crc_p3_flat = panel_set_crc_p3_flat,
 	.panel_set_crc_off = panel_set_crc_off,
-#endif
-#ifdef CONFIG_FACTORY_BUILD
-	.panel_set_round_enable = panel_set_round_enable,
 #endif
 };
 #endif
