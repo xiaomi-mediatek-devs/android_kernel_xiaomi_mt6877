@@ -3463,11 +3463,7 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	/* debug node init */
 	goodix_tools_init();
 	core_data->tp_pm_suspend = false;
-#ifdef CONFIG_FACTORY_BUILD
-	core_data->fod_status = 1;
-#else
 	core_data->fod_status = -1;
-#endif
 	init_completion(&core_data->pm_resume_completion);
 	device_init_wakeup(&pdev->dev, 1);
 	core_data->init_stage = CORE_INIT_STAGE1;
