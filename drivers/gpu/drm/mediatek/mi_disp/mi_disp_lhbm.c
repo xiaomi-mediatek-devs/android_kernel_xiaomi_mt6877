@@ -611,10 +611,6 @@ int mi_disp_set_fod_queue_work(u32 fod_status, bool from_touch)
 	unsigned long flags;
 	int rc = 0;
 
-#ifdef CONFIG_FACTORY_BUILD
-	return 0;
-#endif
-
 	if (fod_status == mi_disp_fod_status) {
 		DISP_INFO("%s Don't report after the first time anymore \n", __func__);
 		return 0;
