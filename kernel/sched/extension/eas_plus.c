@@ -1184,6 +1184,7 @@ int __sched_deisolate_cpu_unlocked(int cpu)
 {
 	int ret_code = 0;
 	u64 start_time = 0;
+	int flags;
 
 	if (trace_sched_isolate_enabled())
 		start_time = sched_clock();
@@ -1206,8 +1207,8 @@ int __sched_deisolate_cpu_unlocked(int cpu)
 
 	if (cpu_online(cpu)) {
 		/* Kick CPU to immediately do load balancing */
-		if ((atomic_fetch_or(NOHZ_BALANCE_KICK, nohz_flags(cpu)) &
-			NOHZ_BALANCE_KICK) != NOHZ_BALANCE_KICK)
+		flags = atomic_fetch_or(NOHZ_BALANCE_KICK, nohz_flags(cpu));
+		if ((flags & NOHZ_BALANCE_KICK) != NOHZ_BALANCE_KICK)
 			smp_send_reschedule(cpu);
 	}
 
