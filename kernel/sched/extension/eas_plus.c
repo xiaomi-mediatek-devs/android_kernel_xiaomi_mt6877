@@ -1208,7 +1208,7 @@ int __sched_deisolate_cpu_unlocked(int cpu)
 	if (cpu_online(cpu)) {
 		/* Kick CPU to immediately do load balancing */
 		flags = atomic_fetch_or(NOHZ_BALANCE_KICK, nohz_flags(cpu));
-		if ((flags & NOHZ_BALANCE_KICK) != NOHZ_BALANCE_KICK)
+		if (!(flags & NOHZ_BALANCE_KICK))
 			smp_send_reschedule(cpu);
 	}
 
