@@ -5,7 +5,7 @@
  */
 
 #include "mediatek/ruby-mt6877.dtsi"
-#include <ruby/cust.dtsi>
+#include "mediatek/ruby/cust.dtsi"
 
 / {
         model = "RUBY";
