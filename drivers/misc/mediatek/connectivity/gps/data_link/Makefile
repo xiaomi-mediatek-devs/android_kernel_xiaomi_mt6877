@@ -62,7 +62,7 @@ KBUILD_MODPOST_FAIL_ON_WARNINGS := y
 ###############################################################################
 
 MODULE_NAME := gps_drv_dl_$(GPS_PLATFORM)
-obj-m += $(MODULE_NAME).o
+obj-y += $(MODULE_NAME).o
 
 GPS_DRV_CONTROL_LNA := n
 GPS_DL_HAS_MOCK := n

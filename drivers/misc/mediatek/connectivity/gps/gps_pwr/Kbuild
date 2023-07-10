@@ -33,7 +33,7 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/power_throttling
 ###############################################################################
 GPS_PWR_TEST_SUPPORT :=n
 MODULE_NAME := gps_pwr
-obj-m += $(MODULE_NAME).o
+obj-y += $(MODULE_NAME).o
 
 $(MODULE_NAME)-objs += gps_pwr.o
 ifeq ($(GPS_PWR_TEST_SUPPORT),y)
