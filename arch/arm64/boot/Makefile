@@ -24,6 +24,12 @@ DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
 else
 DTB_LIST := $(dtb-y)
 endif
+
+DTBO_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES))
+ifneq ($(DTBO_NAMES),)
+DTB_LIST += $(addsuffix .dtbo,$(DTBO_NAMES))
+endif
+
 DTB_OBJS := $(addprefix $(obj)/dts/,$(DTB_LIST))
 
 targets += $(DTB_LIST)
