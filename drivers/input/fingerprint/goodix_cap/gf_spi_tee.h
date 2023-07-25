@@ -47,7 +47,6 @@ u8 g_debug_level = DEBUG_LOG;
 #define GF_NAV_INPUT_LONG_PRESS		KEY_SEARCH
 #define GF_NAV_INPUT_HEAVY		KEY_CHAT
 
-#define GF_KEY_INPUT_HOME		KEY_SELECT
 #define GF_KEY_DOUBLE_CLICK		BTN_C
 #define GF_KEY_INPUT_MENU		KEY_MENU
 #define GF_KEY_INPUT_BACK		KEY_BACK
@@ -71,12 +70,10 @@ typedef enum gf_nav_event {
 
 typedef enum gf_key_event {
 	GF_KEY_NONE = 0,
-	GF_KEY_HOME,
 	GF_KEY_POWER,
 	GF_KEY_MENU,
 	GF_KEY_BACK,
 	GF_KEY_CAMERA,
-	GF_KEY_HOME_DOUBLE_CLICK,
 } gf_key_event_t;
 
 struct gf_key {
