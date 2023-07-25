@@ -1040,7 +1040,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		} else if(GF_KEY_HOME_DOUBLE_CLICK == gf_key.key){
 			key_input = GF_KEY_DOUBLE_CLICK;
 		} else if (GF_KEY_POWER == gf_key.key) {
-			key_input = GF_KEY_INPUT_HOME;
+			key_input = GF_KEY_INPUT_POWER;
 		} else if (GF_KEY_CAMERA == gf_key.key) {
 			key_input = GF_KEY_INPUT_CAMERA;
 		} else {
