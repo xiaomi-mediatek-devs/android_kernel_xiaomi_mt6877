@@ -62,6 +62,8 @@
 #endif
 #include  <linux/regulator/consumer.h>
 
+#define FPC1022_NAME "fpc1022_irq"
+
 #define FPC1022_RESET_LOW_US 5000
 #define FPC1022_RESET_HIGH1_US 100
 #define FPC1022_RESET_HIGH2_US 5000
@@ -137,6 +139,64 @@ struct fpc1022_data {
 	bool wait_finger_down;
 	struct wakeup_source *ttw_wl;
 	struct work_struct work;
+struct input_handler input_handler;
+};
+
+static int input_connect(struct input_handler *handler,
+		struct input_dev *dev, const struct input_device_id *id) {
+	int rc;
+	struct input_handle *handle;
+	struct fpc1022_data *fpc1022 =
+		container_of(handler, struct fpc1022_data, input_handler);
+
+	if (!strstr(dev->name, "uinput-fpc"))
+		return -ENODEV;
+
+	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
+	if (!handle)
+		return -ENOMEM;
+
+	handle->dev = dev;
+	handle->handler = handler;
+	handle->name = FPC1022_NAME;
+	handle->private = fpc1022;
+
+	rc = input_register_handle(handle);
+	if (rc)
+		goto err_input_register_handle;
+
+	rc = input_open_device(handle);
+	if (rc)
+		goto err_input_open_device;
+
+	return 0;
+
+err_input_open_device:
+	input_unregister_handle(handle);
+err_input_register_handle:
+	kfree(handle);
+	return rc;
+}
+
+static bool input_filter(struct input_handle *handle, unsigned int type,
+		unsigned int code, int value)
+{
+	return true;
+}
+
+static void input_disconnect(struct input_handle *handle)
+{
+	input_close_device(handle);
+	input_unregister_handle(handle);
+	kfree(handle);
+}
+
+static const struct input_device_id ids[] = {
+	{
+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
+		.evbit = { BIT_MASK(EV_KEY) },
+	},
+	{ },
 };
 int fp_idx_ic_exist;
 
@@ -748,6 +808,17 @@ static int fpc1022_platform_probe(struct platform_device *pldev)
 	enable_irq_wake(fpc1022->irq_num);
 	fpc1022->ttw_wl = wakeup_source_register(dev,"fpc_ttw_wl");
 
+	fpc1022->input_handler.filter = input_filter;
+	fpc1022->input_handler.connect = input_connect;
+	fpc1022->input_handler.disconnect = input_disconnect;
+	fpc1022->input_handler.name = FPC1022_NAME;
+	fpc1022->input_handler.id_table = ids;
+	ret = input_register_handler(&fpc1022->input_handler);
+	if (ret) {
+		dev_err(dev, "failed to register key handler\n");
+		return ret;
+	}
+
 	ret = sysfs_create_group(&dev->kobj, &attribute_group);
 	if (ret) {
 		dev_err(dev, "could not create sysfs\n");
@@ -828,7 +899,7 @@ MODULE_DEVICE_TABLE(of, fpc1022_of_match);
 
 static struct platform_driver fpc1022_driver = {
 	.driver = {
-		.name = "fpc1022_irq",
+		.name = FPC1022_NAME,
 		.owner = THIS_MODULE,
 		.of_match_table = fpc1022_of_match,
 	},
