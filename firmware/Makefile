@@ -11,6 +11,11 @@ fwabs := $(addprefix $(srctree)/,$(filter-out /%,$(fwdir)))$(filter /%,$(fwdir))
 fw-external-y := $(subst $(quote),,$(CONFIG_EXTRA_FIRMWARE))
 
 fw-shipped-$(CONFIG_TOUCHSCREEN_FOCALTECH_3680) += focaltech_ts_fw.bin
+fw-shipped-$(CONFIG_TOUCHSCREEN_GOODIX_BRL_9916) += \
+    goodix_cfg_group_m16_GVO.bin \
+    goodix_cfg_group_m16_TM.bin \
+    goodix_firmware_m16_GVO.bin \
+    goodix_firmware_m16_TM.bin
 
 fw-shipped-all := $(fw-shipped-y) $(fw-shipped-m) $(fw-shipped-)
 quiet_cmd_ihex  = IHEX    $@
