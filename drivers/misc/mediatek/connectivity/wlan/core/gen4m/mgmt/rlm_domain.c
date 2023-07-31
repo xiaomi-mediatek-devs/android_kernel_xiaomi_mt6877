@@ -68,6 +68,8 @@
  *                    E X T E R N A L   R E F E R E N C E S
  *******************************************************************************
  */
+#include <linux/hwid.h>
+
 #include "precomp.h"
 #include "rlm_txpwr_init.h"
 
@@ -6378,6 +6380,48 @@ void txPwrCtrlGlobalVariableToList(struct ADAPTER *prAdapter)
 			  "config list, after loadding global variables");
 }
 
+const char *txPwrCtrlGetConfigName(void)
+{
+	/*
+	 * The stock kernel module does some extra steps to determine
+	 * which txpowerctrl config it should use. On stock we have 4 of them.
+	 * txpowerctrl_gl.cfg, txpowerctrl_gl_u.cfg, txpowerctrl_in.cfg
+	 * and txpowerctrl_in_u.cfg.
+	 *
+	 * We start by getting the hw_product from Xiaomi's HWID driver,
+	 * the hw_country is also retrieved. We then print them to the
+	 * kernel log.
+	 *
+	 * While I'm not sure what exactly happens with hw_country, we
+	 * can make an educated guess based on what get_hw_country returns. In
+	 * our case, it returns "GL" for global and "IN" for India.
+	 *
+	 * For each region we have 2 configs, one prefixed with _u and one without.
+	 * The normal configs are used when hw_product is 1. The configs suffixed with "_u"
+	 * are used otherwise. The right config for each region is then saved in their own variable.
+	 * We end up getting something looking like this:
+	 * global_config = "txpowerctrl_gl_u.cfg";
+	 * if (hw_product == 1)
+	 * 	global_config = "txpowerctrl_gl.cfg";
+	 * india_config = "txpowerctrl_in_u.cfg";
+	 * if (hw_product == 1)
+	 * 	india_config = "txpowerctrl_in.cfg";
+	 *
+	 * At the end, we then check if the hw_country is equal to "IN" or
+	 * "GL", if it is, we use the config file from the right variable.
+	 */
+	char hw_country[3];
+	int hw_product = get_hw_product();
+	snprintf(hw_country, sizeof(hw_country), "%s", get_hw_country());
+
+	if (!strcmp(hw_country, "IN"))
+		return hw_product == 1 ? "txpowerctrl_in.cfg" : "txpowerctrl_in_u.cfg";
+	else if (!strcmp(hw_country, "GL"))
+		return hw_product == 1 ? "txpowerctrl_gl.cfg" : "txpowerctrl_gl_u.cfg";
+	else
+		return "txpowerctrl.cfg";
+}
+
 void txPwrCtrlCfgFileToList(struct ADAPTER *prAdapter)
 {
 	uint8_t *pucConfigBuf;
@@ -6387,7 +6431,9 @@ void txPwrCtrlCfgFileToList(struct ADAPTER *prAdapter)
 					      VIR_MEM_TYPE);
 	kalMemZero(pucConfigBuf, WLAN_CFG_FILE_BUF_SIZE);
 	if (pucConfigBuf) {
-		if (kalRequestFirmware("txpowerctrl.cfg", pucConfigBuf,
+		const char *cfg_file = txPwrCtrlGetConfigName();
+		DBGLOG(RLM, INFO, "Requesting txpowerctrl config: %s.\n", cfg_file);
+		if (kalRequestFirmware(cfg_file, pucConfigBuf,
 		    WLAN_CFG_FILE_BUF_SIZE, &u4ConfigReadLen,
 		    prAdapter->prGlueInfo->prDev) == 0) {
 			/* ToDo:: Nothing */
