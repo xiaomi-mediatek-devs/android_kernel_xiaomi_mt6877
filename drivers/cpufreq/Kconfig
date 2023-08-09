@@ -46,6 +46,7 @@ config CPU_FREQ_TIMES
 
 config CPU_FREQ_MTK
 	bool "MTK CPU frequency setting API"
+	depends on MTK_CPU_FREQ
 	help
 	  Enables API for controlling MTK CPU frequencies.
 
