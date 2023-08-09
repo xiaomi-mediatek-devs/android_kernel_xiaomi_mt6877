@@ -58,7 +58,7 @@ config MICROTRUST_TZ_DRIVER_MTK_BOOTPROF
 	bool "Enable MTK bootprof to track boot progress of TEEI"
 	depends on MICROTRUST_TZ_DRIVER
 	depends on MTPROF
-	default y
+	default n
 	help
 	  Enables the support of Mediatek bootprof feature in Microtrust
 	  tz_driver. This feature is for tracking boot progress by
