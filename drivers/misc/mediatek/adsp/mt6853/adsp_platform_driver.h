@@ -90,7 +90,9 @@ int create_adsp_drivers(void);
 bool is_adsp_load(void);
 
 extern struct attribute_group adsp_default_attr_group;
+#ifdef CONFIG_MTK_AEE_FEATURE
 extern struct attribute_group adsp_excep_attr_group;
+#endif
 extern const struct file_operations adsp_debug_ops;
 extern const struct file_operations adsp_common_file_ops;
 extern const struct file_operations adsp_core_file_ops;

@@ -38,7 +38,11 @@
 #include <linux/wakelock.h>
 #endif
 #include <mt-plat/sync_write.h>
+
+#ifdef CONFIG_MTK_AEE_FEATURE
 #include <mt-plat/aee.h>
+#endif
+
 #ifdef CONFIG_MTK_TIMER_TIMESYNC
 #include <mtk_sys_timer.h>
 #include <mtk_sys_timer_typedefs.h>
@@ -526,7 +530,9 @@ static const struct attribute_group *adsp_attr_groups[] = {
 	&adsp_default_attr_group,
 	&adsp_awake_attr_group,
 	&adsp_dvfs_attr_group,
+#ifdef CONFIG_MTK_AEE_FEATURE
 	&adsp_excep_attr_group,
+#endif
 	NULL,
 };
 

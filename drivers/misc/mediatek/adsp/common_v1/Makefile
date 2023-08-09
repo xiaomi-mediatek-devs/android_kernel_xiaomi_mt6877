@@ -1,7 +1,8 @@
 obj-y += adsp.o
-adsp-y := adsp_helper.o adsp_excep.o adsp_excep.o adsp_ipi.o adsp_irq.o
+adsp-y := adsp_helper.o adsp_ipi.o adsp_irq.o
 adsp-y += adsp_logger.o adsp_service.o adsp_timesync.o
 #adsp-y += adsp_timesync.o adsp_trace.o
+adsp-$(CONFIG_MTK_AEE_FEATURE) += adsp_excep.o
 
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/audio_ipi/common_v1/framework
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/$(CONFIG_MTK_PLATFORM)
