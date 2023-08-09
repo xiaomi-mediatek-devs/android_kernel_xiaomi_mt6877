@@ -979,9 +979,6 @@ int get_dlpt_imix(void)
 				ptim_lock();
 				wk_auxadc_reset();
 				ptim_unlock();
-#if defined(CONFIG_MTK_SELINUX_AEE_WARNING)
-				aee_kernel_warning("PTIM timeout", "PTIM");
-#endif
 				break;
 			}
 			count_do_ptim++;

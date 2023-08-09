@@ -183,9 +183,6 @@ obj-$(CONFIG_MTK_VIBRATOR) += vibrator/
 obj-$(CONFIG_MTK_PID_MAP) += pidmap/
 obj-$(CONFIG_MTK_JPEG) += jpeg/
 obj-$(CONFIG_MTK_VOW_SUPPORT)  += vow/
-ifneq ($(wildcard $(srctree)/../vendor/mediatek/internal/selinux_warning_enable),)
-obj-$(CONFIG_MTK_SELINUX_AEE_WARNING)	+= selinux_warning/
-endif
 ifeq ($(CONFIG_MACH_MT6833),y)
 obj-$(CONFIG_THERMAL)   += thermal/
 endif
