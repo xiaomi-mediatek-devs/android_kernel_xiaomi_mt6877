@@ -16,7 +16,10 @@
 #include <mt6877_cond.h>
 #include <mtk_lpm_module.h>
 
+#ifdef CONFIG_MTK_AEE_FEATURE
 #include <aee.h>
+#endif
+
 #include <mtk_lpm.h>
 
 #include <mt6877_spm_comm.h>
@@ -503,29 +506,34 @@ static int mt6877_show_message(struct mt6877_spm_wake_status *wakesrc, int type,
 
 	if (wakesrc->is_abort != 0) {
 		/* add size check for vcoredvfs */
+#ifdef CONFIG_MTK_AEE_FEATURE
 		aee_sram_printk("SPM ABORT (%s), r13 = 0x%x, ",
 			scenario, wakesrc->r13);
+#endif
 		log_size += scnprintf(log_buf + log_size,
 			LOG_BUF_OUT_SZ - log_size,
 			"[SPM] ABORT (%s), r13 = 0x%x, ",
 			scenario, wakesrc->r13);
-
+#ifdef CONFIG_MTK_AEE_FEATURE
 		aee_sram_printk(" debug_flag = 0x%x 0x%x",
 			wakesrc->debug_flag, wakesrc->debug_flag1);
+#endif
 		log_size += scnprintf(log_buf + log_size,
 			LOG_BUF_OUT_SZ - log_size,
 			" debug_flag = 0x%x 0x%x",
 			wakesrc->debug_flag, wakesrc->debug_flag1);
-
+#ifdef CONFIG_MTK_AEE_FEATURE
 		aee_sram_printk(" sw_flag = 0x%x 0x%x",
 			wakesrc->sw_flag0, wakesrc->sw_flag1);
+#endif
 		log_size += scnprintf(log_buf + log_size,
 			LOG_BUF_OUT_SZ - log_size,
 			" sw_flag = 0x%x 0x%x\n",
 			wakesrc->sw_flag0, wakesrc->sw_flag1);
-
+#ifdef CONFIG_MTK_AEE_FEATURE
 		aee_sram_printk(" b_sw_flag = 0x%x 0x%x",
 			wakesrc->b_sw_flag0, wakesrc->b_sw_flag1);
+#endif
 		log_size += scnprintf(log_buf + log_size,
 			LOG_BUF_OUT_SZ - log_size,
 			" b_sw_flag = 0x%x 0x%x",
