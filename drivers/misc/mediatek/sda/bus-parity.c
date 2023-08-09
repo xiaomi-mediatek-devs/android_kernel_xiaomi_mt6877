@@ -67,11 +67,18 @@ struct bus_parity {
 	char *dump;
 };
 
+#ifdef CONFIG_MTK_AEE_FEATURE
 #define BPR_LOG(fmt, ...) \
 	do { \
 		pr_notice(fmt, __VA_ARGS__); \
 		aee_sram_printk(fmt, __VA_ARGS__); \
 	} while (0)
+#else
+#define BPR_LOG(fmt, ...) \
+	do { \
+		pr_notice(fmt, __VA_ARGS__); \
+	} while (0)
+#endif
 
 static struct bus_parity mcu_bp, infra_bp;
 static DEFINE_SPINLOCK(mcu_bp_isr_lock);

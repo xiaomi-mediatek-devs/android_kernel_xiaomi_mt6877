@@ -109,11 +109,18 @@ static const struct mtk_cache_parity_compatible mt6873_compat = {
 	.ver = 2,
 };
 
+#ifdef CONFIG_MTK_AEE_FEATURE
 #define ECC_LOG(fmt, ...) \
 	do { \
 		pr_notice(fmt, __VA_ARGS__); \
 		aee_sram_printk(fmt, __VA_ARGS__); \
 	} while (0)
+#else
+#define ECC_LOG(fmt, ...) \
+	do { \
+		pr_notice(fmt, __VA_ARGS__); \
+	} while (0)
+#endif
 
 static struct cache_parity cache_parity;
 static struct parity_irq_record_t *parity_irq_record;
