@@ -19,7 +19,6 @@
 #include <linux/err.h>
 #include <linux/cpufreq.h>
 #include <cpu_ctrl.h>
-#include <sched_ctl.h>
 
 #define CLUSTER_NUM 2
 #define LITTLE 0
@@ -33,8 +32,6 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
 static struct cpufreq_frequency_table* cpuftbl[2];
 
 static struct ppm_limit_data *current_cpu_freq;
-
-extern int set_sched_boost(unsigned int val);
 
 DEFINE_MUTEX(cpufreq_mtk_mutex);
 
@@ -81,20 +78,6 @@ out:
     return ret;
 }
 
-/* Updates CPU frequency for chosen cluster */
-void update_cpu_freq(int cluster)
-{
-
-#ifdef CONFIG_MTK_SCHED_BOOST
-    int sched_boost_type = (current_cpu_freq[cluster].min > 0 || current_cpu_freq[cluster].max > 0)
-                            ? SCHED_ALL_BOOST : SCHED_NO_BOOST;
-
-    set_sched_boost(sched_boost_type);
-#endif
-
-    update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
-}
-
 /* Sets current maximum CPU frequency */
 int set_max_cpu_freq(int cluster, int max)
 {
@@ -107,7 +90,7 @@ int set_max_cpu_freq(int cluster, int max)
         goto out;
 
     current_cpu_freq[cluster].max = max > 0 ? max : -1;
-    update_cpu_freq(cluster);
+    update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
     ret = 0;
 
 out:
@@ -126,7 +109,7 @@ int set_min_cpu_freq(int cluster, int min)
         goto out;
 
     current_cpu_freq[cluster].min = min > 0 ? min : -1;
-    update_cpu_freq(cluster);
+    update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
     ret = 0;
 
 out:
