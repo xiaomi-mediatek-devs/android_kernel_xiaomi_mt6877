@@ -2809,14 +2809,14 @@ module_param_cb(force_bwl, &force_bwl_ops,
 MODULE_PARM_DESC(force_bwl,
 	"force bwl for each larb");
 
-#if (defined(CONFIG_MTK_MT6382_BDG) && defined(CONFIG_MTK_MT6382_VDO_MODE)) \
+#if defined(CONFIG_MTK_MT6382_BDG) \
 	&& (defined(CONFIG_MACH_MT6785) || defined(CONFIG_MACH_MT6768))
 module_init(mmdvfs_pmqos_late_init);
 arch_initcall_sync(mmdvfs_pmqos_init);
 #else
 late_initcall(mmdvfs_pmqos_late_init);
-#endif
 module_init(mmdvfs_pmqos_init);
+#endif
 module_exit(mmdvfs_pmqos_exit);
 
 MODULE_DESCRIPTION("MTK MMDVFS driver");
