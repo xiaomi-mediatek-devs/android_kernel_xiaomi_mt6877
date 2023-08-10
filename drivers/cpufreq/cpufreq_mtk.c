@@ -1,7 +1,7 @@
 /*
  * drivers/cpufreq/cpufreq_mtk.c
  *
- * Copyright (C) 2022 bengris32
+ * Copyright (C) 2022-2023 bengris32
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -24,211 +24,87 @@
 #define LITTLE 0
 #define BIG 1
 
-#define cpufreq_mtk_attr(_name)						\
-static struct kobj_attribute _name##_attr =			\
-__ATTR(_name, 0644, show_##_name, store_##_name)
+#define DEFINE_CPUFREQ_ATTR(attr_name, cluster, freq_field)  \
+    static ssize_t show_##attr_name(struct kobject *kobj,    \
+                    struct kobj_attribute *attr, char *buf)  \
+    {                                                        \
+        return sprintf(buf, "%d\n", current_cpu_freq[cluster].freq_field); \
+    }                                                        \
+                                                             \
+    static ssize_t store_##attr_name(struct kobject *kobj,   \
+                    struct kobj_attribute *attr, const char *buf, \
+                    size_t count)                            \
+    {                                                        \
+        int ret, new_freq;                                   \
+                                                             \
+        ret = sscanf(buf, "%d", &new_freq);                  \
+        if (ret != 1)                                        \
+            return -EINVAL;                                  \
+                                                             \
+        ret = set_##freq_field(cluster, new_freq);           \
+                                                             \
+        if (ret)                                             \
+            return ret;                                      \
+                                                             \
+        return count;                                        \
+    }                                                        \
+                                                             \
+    static struct kobj_attribute attr_name##_attr =          \
+        __ATTR(attr_name, 0644, show_##attr_name, store_##attr_name)
 
-/* cpu frequency table from cpufreq dt parse */
-static struct cpufreq_frequency_table* cpuftbl[2];
-
-static struct ppm_limit_data *current_cpu_freq;
-
+static struct cpu_ctrl_data *current_cpu_freq;
 DEFINE_MUTEX(cpufreq_mtk_mutex);
 
-struct cpufreq_mtk_topo_config {
-    unsigned int ltl_cpu_start;
-    unsigned int big_cpu_start;
-};
-
-#if defined(CONFIG_MACH_MT6768)
-static const struct cpufreq_mtk_topo_config topology = {
-    .ltl_cpu_start			= 0,
-    .big_cpu_start			= 6,
-};
-#endif
-
-void cpufreq_mtk_set_table(int cpu, struct cpufreq_frequency_table *ftbl)
-{
-	if ( cpu == topology.big_cpu_start )
-		cpuftbl[BIG] = ftbl;
-	else if ( cpu == topology.ltl_cpu_start )
-		cpuftbl[LITTLE] = ftbl;
-}
-EXPORT_SYMBOL_GPL(cpufreq_mtk_set_table);
-
-int is_freq_valid(int cluster, int freq) {
-    struct cpufreq_frequency_table *pos;
-    int ret;
-
-    /* 
-     * Allow -1 frequency as that is
-     * used to remove the limit.
-     */
-    if (freq == -1)
-        goto out;
-
-    cpufreq_for_each_valid_entry(pos, cpuftbl[cluster]) {
-        if (pos->frequency == freq)
-            goto out;
-    }
-
-    ret = 1;
-
-out:
-    return ret;
-}
-
 /* Sets current maximum CPU frequency */
-int set_max_cpu_freq(int cluster, int max)
+int set_max(int cluster, int max)
 {
-    int ret = -EINVAL;
+    int ret, old_max;
 
-    if (unlikely(!is_freq_valid(cluster, max)))
-        goto out;
+    mutex_lock(&cpufreq_mtk_mutex);
 
-    if (unlikely(max < current_cpu_freq[cluster].min && current_cpu_freq[cluster].min > 0))
-        goto out;
+    old_max = current_cpu_freq[cluster].max;
+    current_cpu_freq[cluster].max = max;
 
-    current_cpu_freq[cluster].max = max > 0 ? max : -1;
-    update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
-    ret = 0;
+    ret = update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
+    if (ret)
+        /*
+         * update_userlimit_cpu_freq() does it's own checks, so we
+         * don't need to do it here. If it fails, we will just restore
+         * the old value. (the frequency change didn't apply)
+         */
+        current_cpu_freq[cluster].max = old_max;
 
-out:
+    mutex_unlock(&cpufreq_mtk_mutex);
     return ret;
 }
 
 /* Sets current minimum CPU frequency */
-int set_min_cpu_freq(int cluster, int min)
+int set_min(int cluster, int min)
 {
-    int ret = -EINVAL;
+    int ret, old_min;
 
-    if (unlikely(!is_freq_valid(cluster, min)))
-        goto out;
+    mutex_lock(&cpufreq_mtk_mutex);
 
-    if (unlikely(min > current_cpu_freq[cluster].max && current_cpu_freq[cluster].max > 0))
-        goto out;
+    old_min = current_cpu_freq[cluster].min;
+    current_cpu_freq[cluster].min = min;
 
-    current_cpu_freq[cluster].min = min > 0 ? min : -1;
-    update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
-    ret = 0;
+    ret = update_userlimit_cpu_freq(CPU_KIR_PERF, CLUSTER_NUM, current_cpu_freq);
+    if (ret)
+        /*
+         * update_userlimit_cpu_freq() does it's own checks, so we
+         * don't need to do it here. If it fails, we will just restore
+         * the old value. (the frequency change didn't apply)
+         */
+        current_cpu_freq[cluster].min = old_min;
 
-out:
+    mutex_unlock(&cpufreq_mtk_mutex);
     return ret;
 }
 
-static ssize_t show_lcluster_min_freq(struct kobject *kobj,
-					struct kobj_attribute *attr, char *buf)
-{
-    return sprintf(buf, "%d\n", current_cpu_freq[LITTLE].min);
-}
-
-static ssize_t store_lcluster_min_freq(struct kobject *kobj,
-                    struct kobj_attribute *attr, const char *buf,
-                    size_t count)
-{
-    int ret, new_freq;
-
-    ret = sscanf(buf, "%d", &new_freq);
-    if (ret != 1)
-        return -EINVAL;
-
-    mutex_lock(&cpufreq_mtk_mutex);
-    ret = set_min_cpu_freq(LITTLE, new_freq);
-    mutex_unlock(&cpufreq_mtk_mutex);
-
-    if (ret < 0)
-        count = ret;
-
-    return count;
-}
-
-cpufreq_mtk_attr(lcluster_min_freq);
-
-static ssize_t show_lcluster_max_freq(struct kobject *kobj,
-					struct kobj_attribute *attr, char *buf)
-{
-    return sprintf(buf, "%d\n", current_cpu_freq[LITTLE].max);
-}
-
-static ssize_t store_lcluster_max_freq(struct kobject *kobj,
-                    struct kobj_attribute *attr, const char *buf,
-                    size_t count)
-{
-    int ret, new_freq;
-
-    ret = sscanf(buf, "%d", &new_freq);
-    if (ret != 1)
-        return -EINVAL;
-
-    mutex_lock(&cpufreq_mtk_mutex);
-    ret = set_max_cpu_freq(LITTLE, new_freq);
-    mutex_unlock(&cpufreq_mtk_mutex);
-
-    if (ret < 0)
-        count = ret;
-
-    return count;
-}
-
-cpufreq_mtk_attr(lcluster_max_freq);
-
-static ssize_t show_bcluster_min_freq(struct kobject *kobj,
-					struct kobj_attribute *attr,
-					char *buf)
-{
-    return sprintf(buf, "%d\n", current_cpu_freq[BIG].min);
-}
-
-static ssize_t store_bcluster_min_freq(struct kobject *kobj,
-                    struct kobj_attribute *attr, const char *buf,
-                    size_t count)
-{
-    int ret, new_freq;
-
-    ret = sscanf(buf, "%d", &new_freq);
-    if (ret != 1)
-        return -EINVAL;
-
-    mutex_lock(&cpufreq_mtk_mutex);
-    ret = set_min_cpu_freq(BIG, new_freq);
-    mutex_unlock(&cpufreq_mtk_mutex);
-
-    if (ret < 0)
-        return ret;
-
-    return count;
-}
-
-cpufreq_mtk_attr(bcluster_min_freq);
-
-static ssize_t show_bcluster_max_freq(struct kobject *kobj,
-					struct kobj_attribute *attr,
-					char *buf)
-{
-    return sprintf(buf, "%d\n", current_cpu_freq[BIG].max);
-}
-
-static ssize_t store_bcluster_max_freq(struct kobject *kobj,
-                    struct kobj_attribute *attr, const char *buf,
-                    size_t count)
-{
-    int ret, new_freq;
-
-    ret = sscanf(buf, "%d", &new_freq);
-    if (ret != 1)
-        return -EINVAL;
-
-    mutex_lock(&cpufreq_mtk_mutex);
-    ret = set_max_cpu_freq(BIG, new_freq);
-    mutex_unlock(&cpufreq_mtk_mutex);
-
-    if (ret < 0)
-        return ret;
-
-    return count;
-}
-
-cpufreq_mtk_attr(bcluster_max_freq);
+DEFINE_CPUFREQ_ATTR(lcluster_min_freq, LITTLE, min);
+DEFINE_CPUFREQ_ATTR(lcluster_max_freq, LITTLE, max);
+DEFINE_CPUFREQ_ATTR(bcluster_min_freq, BIG, min);
+DEFINE_CPUFREQ_ATTR(bcluster_max_freq, BIG, max);
 
 static struct attribute *mtk_param_attributes[] = {
     &lcluster_min_freq_attr.attr,
@@ -247,7 +123,7 @@ static int __init cpufreq_mtk_init(void)
 {
     int ret;
 
-    current_cpu_freq = kcalloc(CLUSTER_NUM, sizeof(struct ppm_limit_data), GFP_KERNEL);
+    current_cpu_freq = kcalloc(CLUSTER_NUM, sizeof(struct cpu_ctrl_data), GFP_KERNEL);
 
     if (!current_cpu_freq) {
         pr_err("[%s] Could not allocate memory for current_cpu_freq!\n", __func__);
@@ -284,7 +160,7 @@ static void __exit cpufreq_mtk_exit(void)
     kfree(current_cpu_freq);
 }
 
-MODULE_DESCRIPTION("CPU frequencies setting for MTK scheduler");
+MODULE_DESCRIPTION("CPU frequency control for MediaTek's CPUFreq API");
 MODULE_AUTHOR("bengris32");
 MODULE_LICENSE("GPL");
 
