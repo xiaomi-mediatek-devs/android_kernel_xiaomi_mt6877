@@ -254,6 +254,7 @@ EXPORT_SYMBOL(update_cpu_core_limit);
 #endif
 
 /***************************************/
+#ifndef CONFIG_CPU_FREQ_MTK
 static ssize_t perfmgr_perfserv_freq_proc_write(struct file *filp
 		, const char __user *ubuf, size_t cnt, loff_t *pos)
 {
@@ -409,6 +410,7 @@ static int perfmgr_boot_freq_proc_show(struct seq_file *m, void *v)
 
 	return 0;
 }
+#endif /* CONFIG_CPU_FREQ_MTK */
 
 /***************************************/
 static int perfmgr_current_freq_proc_show(struct seq_file *m, void *v)
@@ -660,9 +662,11 @@ static int perfmgr_perfserv_all_cpu_deisolated_proc_show
 	return 0;
 }
 
-
+#ifndef CONFIG_CPU_FREQ_MTK
 PROC_FOPS_RW(perfserv_freq);
 PROC_FOPS_RW(boot_freq);
+#endif
+
 PROC_FOPS_RO(current_freq);
 PROC_FOPS_RW(perfmgr_log);
 PROC_FOPS_RW(perfserv_iso_cpu);
@@ -682,8 +686,10 @@ int cpu_ctrl_init(struct proc_dir_entry *parent)
 	};
 
 	const struct pentry entries[] = {
+#ifndef CONFIG_CPU_FREQ_MTK
 		PROC_ENTRY(perfserv_freq),
 		PROC_ENTRY(boot_freq),
+#endif
 		PROC_ENTRY(current_freq),
 		PROC_ENTRY(perfmgr_log),
 		PROC_ENTRY(perfserv_iso_cpu),
