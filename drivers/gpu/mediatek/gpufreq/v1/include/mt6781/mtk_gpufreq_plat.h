@@ -13,7 +13,12 @@
 
 
 #define MT_GPUFREQ_BRINGUP                      0
+#ifdef CONFIG_MTK_PBM
 #define MT_GPUFREQ_KICKER_PBM_READY             1
+#else
+#define MT_GPUFREQ_KICKER_PBM_READY             0
+#endif
+
 #define MT_GPUFREQ_STATIC_PWR_READY2USE         1
 #define MT_GPUFREQ_DYNAMIC_POWER_TABLE_UPDATE   1
 
