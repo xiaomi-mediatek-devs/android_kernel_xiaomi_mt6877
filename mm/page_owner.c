@@ -653,7 +653,7 @@ static ssize_t __update_max_page_owner(unsigned long pfn,
 		.skip = 0
 	};
 
-	depot_hit_stack(handle, &trace, (1 << page_owner->order));
+	depot_hit_stack(handle, &trace);
 	return 0;
 }
 
