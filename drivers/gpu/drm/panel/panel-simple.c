@@ -1059,6 +1059,36 @@ static const struct panel_desc innolux_at070tn92 = {
 	.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
 };
 
+static const struct display_timing innolux_g070y2_l01_timing = {
+	.pixelclock = { 28000000, 29500000, 32000000 },
+	.hactive = { 800, 800, 800 },
+	.hfront_porch = { 61, 91, 141 },
+	.hback_porch = { 60, 90, 140 },
+	.hsync_len = { 12, 12, 12 },
+	.vactive = { 480, 480, 480 },
+	.vfront_porch = { 4, 9, 30 },
+	.vback_porch = { 4, 8, 28 },
+	.vsync_len = { 2, 2, 2 },
+	.flags = DISPLAY_FLAGS_DE_HIGH,
+};
+
+static const struct panel_desc innolux_g070y2_l01 = {
+	.timings = &innolux_g070y2_l01_timing,
+	.num_timings = 1,
+	.bpc = 8,
+	.size = {
+		.width = 152,
+		.height = 91,
+	},
+	.delay = {
+		.prepare = 10,
+		.enable = 100,
+		.disable = 100,
+		.unprepare = 800,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB888_1X7X4_SPWG,
+};
+
 static const struct display_timing innolux_g101ice_l01_timing = {
 	.pixelclock = { 60400000, 71100000, 74700000 },
 	.hactive = { 1280, 1280, 1280 },
