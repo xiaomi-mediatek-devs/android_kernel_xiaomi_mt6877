@@ -178,7 +178,11 @@ int Ripi_cpu_dvfs_thread(void *data)
 	struct mt_cpu_dvfs *p;
 	unsigned long flags;
 	uint32_t pwdata[4];
+#ifndef CONFIG_MTK_CPU_FREQ_STANDARDIZE
 	struct cpufreq_freqs freqs;
+#else
+	bool policy_update[NR_MT_CPU_DVFS] = { false };
+#endif
 
 	int previous_limit = -1;
 	int previous_base = -1;
@@ -346,6 +350,7 @@ int Ripi_cpu_dvfs_thread(void *data)
 				if (j > p->idx_opp_ppm_base)
 					j = p->idx_opp_ppm_base;
 
+#ifndef CONFIG_MTK_CPU_FREQ_STANDARDIZE
 				/* Update policy min/max */
 
 				p->mt_policy->min =
@@ -357,7 +362,16 @@ int Ripi_cpu_dvfs_thread(void *data)
 				p->mt_policy->min =
 					(p->mt_policy->min > p->mt_policy->max) ?
 					p->mt_policy->max : p->mt_policy->min;
-
+#else
+				/*
+				 * since ppm will not use cpuhvfs_set_min_max,
+				 * only sspm thermal will trigger this
+				 */
+				if (p->idx_opp_ppm_limit != previous_limit ||
+				    p->idx_opp_ppm_base != previous_base) {
+					policy_update[i] = true;
+				}
+#endif
 #ifdef SINGLE_CLUSTER
 				cid =
 	cpufreq_get_cluster_id(p->mt_policy->cpu);
@@ -385,6 +399,7 @@ int Ripi_cpu_dvfs_thread(void *data)
 				}
 #endif
 
+#ifndef CONFIG_MTK_CPU_FREQ_STANDARDIZE
 #if defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6877) \
 	|| defined(CONFIG_MACH_MT6781)
 				if (p->mt_policy->cur > p->mt_policy->max) {
@@ -430,9 +445,20 @@ int Ripi_cpu_dvfs_thread(void *data)
 					p->mt_policy, &freqs, 0);
 #endif
 				}
+#endif
 			}
 		}
 		cpufreq_unlock(flags);
+
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+		for_each_cpu_dvfs_only(i, p) {
+			if (policy_update[i] == false)
+				continue;
+			/* to make base/limit work */
+			cpufreq_update_policy(p->mt_policy->cpu);
+			policy_update[i] = false;
+		}
+#endif
 
 	} while (!kthread_should_stop());
 	return 0;

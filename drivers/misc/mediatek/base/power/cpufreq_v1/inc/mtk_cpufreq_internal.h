@@ -47,6 +47,10 @@
 #define MAX(a, b) ((a) >= (b) ? (a) : (b))
 #define MIN(a, b) ((a) >= (b) ? (b) : (a))
 
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+extern void (*cpufreq_notifier_fp)(int cid, unsigned long freq);
+#endif
+
 /*
  * LOCK
  */

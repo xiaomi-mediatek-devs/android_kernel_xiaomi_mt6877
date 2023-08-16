@@ -1001,6 +1001,29 @@ static unsigned int _calc_new_opp_idx(struct mt_cpu_dvfs *p, int new_opp_idx)
 	return new_opp_idx;
 }
 
+#ifdef MTK_CPU_FREQ_STANDARDIZE
+static void ppm_limit_callback(struct ppm_client_req req)
+{
+	struct ppm_client_req *ppm = (struct ppm_client_req *)&req;
+	unsigned int i;
+	int min, max;
+	struct mt_cpu_dvfs *p;
+
+	/* set ppm dvfs limit to policy, same as scaling_min/max_freq */
+	for (i = 0; i < ppm->cluster_num; i++) {
+		min = ppm->cpu_limit[i].min_cpufreq_idx;
+		max = ppm->cpu_limit[i].max_cpufreq_idx;
+		if (ppm->cpu_limit[i].has_advise_freq)
+			min = max = ppm->cpu_limit[i].advise_cpufreq_idx;
+
+		p = id_to_cpu_dvfs(i);
+		if (p)
+			cpufreq_set_policy_ppm(p->mt_policy->cpu,
+					cpu_dvfs_get_freq_by_idx(p, min),
+					cpu_dvfs_get_freq_by_idx(p, max));
+	}
+}
+#else
 static void ppm_limit_callback(struct ppm_client_req req)
 {
 	struct ppm_client_req *ppm = (struct ppm_client_req *)&req;
@@ -1057,6 +1080,7 @@ static void ppm_limit_callback(struct ppm_client_req req)
 	_mt_cpufreq_dvfs_request_wrapper(NULL, 0, MT_CPU_DVFS_PPM, NULL);
 #endif
 }
+#endif /* CONFIG_MTK_CPU_FREQ_STANDARDIZE */
 
 #ifdef CONFIG_CPU_FREQ
 /*
@@ -1076,6 +1100,89 @@ static int _mt_cpufreq_ver_dbgify(struct cpufreq_policy *policy)
 	return ret;
 }
 
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+static int _mt_cpufreq_target_index(struct cpufreq_policy *policy, unsigned int index)
+{
+	struct mt_cpu_dvfs *p = NULL;
+	unsigned int next_freq = policy->freq_table[index].frequency;
+	int cid = _get_cpu_dvfs_id(policy->cpu);
+	unsigned long flags;
+	int j;
+	int ret = 0;
+
+	cpufreq_lock(flags);
+	p = id_to_cpu_dvfs(cid);
+	if (!p) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	if (dvfs_disable_flag || p->dvfs_disable_by_suspend ||
+					p->dvfs_disable_by_procfs) {
+		ret = -EPERM;
+		goto out;
+	}
+
+	if (cpufreq_notifier_fp)
+		cpufreq_notifier_fp(cid, next_freq);
+
+	mt_cpufreq_set_by_wfi_load_cluster(cid, next_freq);
+	j = _search_available_freq_idx(p, next_freq, CPUFREQ_RELATION_L);
+	p->idx_opp_tbl = j;
+	arch_set_freq_scale(policy->cpus, next_freq,
+			policy->cpuinfo.max_freq);
+
+out:
+	cpufreq_unlock(flags);
+
+	return ret;
+}
+
+/**
+ * cpufreq_sspm_thermal_notifier - notifier callback for cpufreq policy change.
+ * @nb:	struct notifier_block * with callback info.
+ * @event: value showing cpufreq event for which this function invoked.
+ * @data: callback-specific data
+ *
+ * Callback to hijack the notification on cpufreq policy transition.
+ * Every time there is a change in policy, we will intercept and
+ * update the cpufreq policy with sspm thermal.
+ *
+ * Return: 0 (success)
+ */
+static int cpufreq_sspm_thermal_notifier(struct notifier_block *nb,
+					 unsigned long event, void *data)
+{
+	struct cpufreq_policy *policy = data;
+	struct mt_cpu_dvfs *p = NULL;
+	unsigned long flags;
+	int max;
+
+	if (event != CPUFREQ_ADJUST)
+		return NOTIFY_DONE;
+
+	cpufreq_lock(flags);
+
+	p = id_to_cpu_dvfs(_get_cpu_dvfs_id(policy->cpu));
+	if (!p) {
+		cpufreq_unlock(flags);
+		return NOTIFY_DONE;
+	}
+
+	max = cpu_dvfs_get_freq_by_idx(p, p->idx_opp_ppm_limit);
+	if (policy->max > max)
+		cpufreq_verify_within_limits(policy, 0, max);
+
+	cpufreq_unlock(flags);
+
+	return NOTIFY_OK;
+}
+
+/* Notifier for cpufreq policy change */
+static struct notifier_block _mt_cpufreq_notifier_block = {
+	.notifier_call = cpufreq_sspm_thermal_notifier,
+};
+#else
 static int _mt_cpufreq_target(struct cpufreq_policy *policy,
 	unsigned int target_freq,
 	unsigned int relation)
@@ -1101,6 +1208,7 @@ static int _mt_cpufreq_target(struct cpufreq_policy *policy,
 
 	return 0;
 }
+#endif /* CONFIG_MTK_CPU_FREQ_STANDARDIZE */
 
 static int _mt_cpufreq_init(struct cpufreq_policy *policy)
 {
@@ -1116,6 +1224,9 @@ static int _mt_cpufreq_init(struct cpufreq_policy *policy)
 
 	cpu_dev = get_cpu_device(policy->cpu);
 	policy->cpuinfo.transition_latency = 1000;
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+	policy->dvfs_possible_from_any_cpu = true;
+#endif
 
 	{
 		enum mt_cpu_dvfs_id id = _get_cpu_dvfs_id(policy->cpu);
@@ -1188,11 +1299,24 @@ static int _mt_cpufreq_exit(struct cpufreq_policy *policy)
 static unsigned int _mt_cpufreq_get(unsigned int cpu)
 {
 	struct mt_cpu_dvfs *p;
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+	struct pll_ctrl_t *pll_p = NULL;
+	unsigned int cur_freq;
+	unsigned int j;
+#endif
 
 	p = id_to_cpu_dvfs(_get_cpu_dvfs_id(cpu));
 	if (!p)
 		return 0;
 
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+	if (p->mt_policy) {
+		pll_p = id_to_pll_ctrl(p->Pll_id);
+		cur_freq = pll_p->pll_ops->get_cur_freq(pll_p);
+		j = _search_available_freq_idx(p, cur_freq, CPUFREQ_RELATION_L);
+		return cpu_dvfs_get_freq_by_idx(p, j);
+	}
+#endif
 	return cpu_dvfs_get_cur_freq(p);
 }
 
@@ -1202,9 +1326,14 @@ static struct freq_attr *_mt_cpufreq_attr[] = {
 };
 
 static struct cpufreq_driver _mt_cpufreq_driver = {
+#ifndef CONFIG_MTK_CPU_FREQ_STANDARDIZE
 	.flags = CPUFREQ_ASYNC_NOTIFICATION,
-	.verify = _mt_cpufreq_ver_dbgify,
 	.target = _mt_cpufreq_target,
+#else
+	.flags = CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+	.target_index = _mt_cpufreq_target_index,
+#endif
+	.verify = _mt_cpufreq_ver_dbgify,
 	.init = _mt_cpufreq_init,
 	.exit = _mt_cpufreq_exit,
 	.get = _mt_cpufreq_get,
@@ -1320,6 +1449,10 @@ static int _mt_cpufreq_pdrv_probe(struct platform_device *pdev)
 #ifdef CONFIG_CPU_FREQ
 	cpufreq_register_driver(&_mt_cpufreq_driver);
 #endif
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+	cpufreq_register_notifier(&_mt_cpufreq_notifier_block,
+			CPUFREQ_POLICY_NOTIFIER);
+#endif
 	hp_online = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
 						   "cpu_dvfs:online",
 						   cpuhp_cpufreq_online,
@@ -1344,6 +1477,10 @@ static int _mt_cpufreq_pdrv_remove(struct platform_device *pdev)
 {
 	FUNC_ENTER(FUNC_LV_MODULE);
 	cpuhp_remove_state_nocalls(hp_online);
+#ifdef CONFIG_MTK_CPU_FREQ_STANDARDIZE
+	cpufreq_unregister_notifier(&_mt_cpufreq_notifier_block,
+			CPUFREQ_POLICY_NOTIFIER);
+#endif
 #ifdef CONFIG_CPU_FREQ
 	cpufreq_unregister_driver(&_mt_cpufreq_driver);
 #endif

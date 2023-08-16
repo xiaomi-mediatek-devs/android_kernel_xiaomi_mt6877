@@ -6,6 +6,14 @@ config MTK_CPU_FREQ
 	  changed which will depended on CPU FREQ governor.
 	  If unsure, say N.
 
+config MTK_CPU_FREQ_STANDARDIZE
+	bool "Sane frequency control for mtk cpufreq"
+	depends on MTK_CPU_FREQ
+	help
+	  Say Y here to allow the standard cpufreq driver to control
+	  the frequency of the CPU.
+	  If unsure, say N.
+
 config MTK_PTPOD
 	bool "MTK PTPOD"
 	help
