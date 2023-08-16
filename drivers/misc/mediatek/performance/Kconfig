@@ -1,15 +1,25 @@
-config MTK_PERFMGR_TOUCH_BOOST
-	tristate "touch boost in performance manager"
+
+config MTK_TOPO_CTRL
+	bool "MediaTek Topology information driver"
 	help
-	  MTK_PERFMGR_TOUCH_BOOST is the kernel config of touch boost
-	  feature designed by MTK, which is a performance improving
-	  feature for user experience. When the device receives touch
-	  event, it will raise system resources(CPU frequency / CPU cores)
-	  for better user experience.
+	  Say Y here to enable MediaTek Topology information driver.
+	  This driver provides the topology information of the system
+	  to userspace and kernel modules.
+
+config MTK_CPU_CTRL
+	bool "CPU CTRL support"
+	depends on MTK_CPU_FREQ
+	depends on MTK_TOPO_CTRL
+	depends on !MTK_GKI_COMPAT
+	help
+	  Say Y here to enable MediaTeks custom CPU controller.
+	  This will prevent the standard cpufreq target interface
+	  from working, so it should only be used on devices that
+	  are using MediaTeks Power HAL.
 
 config MTK_LOAD_TRACKER
 	tristate "CPU Loading Tracking Service"
-	depends on CPU_FREQ
+	depends on CPU_FREQ && MTK_CPU_CTRL
 	help
 	  MTK_LOAD_TRACKER is the kernel config of CPU Loading Tracking
 	  Service designed by MTK, which is a service to get CPU Loading
@@ -18,6 +28,7 @@ config MTK_LOAD_TRACKER
 
 config MTK_CPU_CTRL_CFP
 	tristate "CPU CTRL Ceiling-Fool-Proof"
+	depends on MTK_CPU_CTRL
 	depends on MTK_LOAD_TRACKER
 	help
 	  MTK_CPU_CTRL_CFP is the kernel config of CPU controller
@@ -25,6 +36,29 @@ config MTK_CPU_CTRL_CFP
 	  will free CPU frequency ceiling during heavy CPU loading.
 	  This function depends on MTK_LOAD_TRACKER.
 
+config MTK_EAS_CTRL
+	bool "MediaTek EAS control"
+	depends on MTK_CPU_CTRL
+	help
+	  Say Y here to enable MediaTeks EAS control driver.
+	  This driver provides the EAS control interface to userspace.
+
+config MTK_SYSLIMITER
+	bool "MTK system limiter support"
+	depends on MTK_CPU_CTRL
+	help
+  	  Say Y here to enable MediaTeks syslimiter driver.
+
+config MTK_PERFMGR_TOUCH_BOOST
+	tristate "touch boost in performance manager"
+	depends on MTK_CPU_CTRL
+	help
+	  MTK_PERFMGR_TOUCH_BOOST is the kernel config of touch boost
+	  feature designed by MTK, which is a performance improving
+	  feature for user experience. When the device receives touch
+	  event, it will raise system resources(CPU frequency / CPU cores)
+	  for better user experience.
+	
 config MTK_PERF_OBSERVER
 	bool "MTK system performance observer support"
 	help
@@ -43,6 +77,8 @@ config MTK_RESYM
 
 config MTK_FPSGO_V3
 	bool "Support FPSGO_V3 framework"
+	depends on MTK_CPU_CTRL
+	depends on MTK_PERFMGR_TOUCH_BOOST
 	help
 	  Support FPSGO_V3 framework for most FPS performance and
 	  low power balance. As a perquisite to ensure FPS performance,
@@ -76,4 +112,3 @@ config MTK_FRS
 	  Support Frame Rate Smoother kernel intergface. It will adjustment
 	  target fps by thermal.
 	  If you are not sure about this, set n.
-

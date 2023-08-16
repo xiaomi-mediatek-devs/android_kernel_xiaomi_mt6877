@@ -14,4 +14,4 @@
 ccflags-y += \
 	-I$(srctree)/kernel/
 
-obj-y += topo_ctrl.o
+obj-$(CONFIG_MTK_TOPO_CTRL) += topo_ctrl.o

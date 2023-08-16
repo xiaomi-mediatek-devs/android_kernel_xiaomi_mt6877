@@ -30,7 +30,7 @@ struct platform_device perfmgr_device = {
 
 static int perfmgr_suspend(struct device *dev)
 {
-#ifdef CONFIG_MTK_PERFMGR_TOUCH_BOOST
+#if defined(CONFIG_MTK_PERFMGR_TOUCH_BOOST) && !(defined(CONFIG_MTK_FPSGO) || defined(CONFIG_MTK_FPSGO_V3))
 	ktch_suspend();
 #endif
 	return 0;
@@ -80,10 +80,13 @@ static int __init init_perfmgr(void)
 	pr_debug("MTK_TOUCH_BOOST function init_perfmgr_touch\n");
 
 	init_boostctrl(perfmgr_root);
+#ifdef CONFIG_MTK_PERFMGR_TOUCH_BOOST
 	init_tchbst(perfmgr_root);
+#endif
 	init_perfctl(perfmgr_root);
+#ifdef CONFIG_MTK_SYSLIMITER
 	syslimiter_init(perfmgr_root);
-
+#endif
 #ifdef CONFIG_MTK_LOAD_TRACKER
 	init_uload_ind(NULL);
 #endif

@@ -8,6 +8,13 @@ config MTK_ECCCI_DRIVER
 	  eccci driver is disabled.
 	  The option default disabled.
 
+config MTK_ECCCI_NET_SPEED_MONITOR
+	bool "Enable ECCCI net speed monitor"
+	default y
+	depends on MTK_CPU_CTRL
+	help
+	  Say Y here to enable ECCCI net speed monitor.
+
 config MTK_ECCCI_CLDMA
 	tristate "ECCCI driver using CLDMA HW to communicate wtih LTE modem"
 	depends on MTK_ECCCI_DRIVER
