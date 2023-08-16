@@ -55,4 +55,4 @@ ccflags-y += \
 		-DMTK_K14_EAS_BOOST
 endif
 
-obj-y += eas_ctrl.o uclamp_ctrl.o
+obj-$(CONFIG_MTK_EAS_CTRL) += eas_ctrl.o uclamp_ctrl.o

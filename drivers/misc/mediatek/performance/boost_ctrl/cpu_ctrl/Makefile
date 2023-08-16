@@ -13,9 +13,7 @@
 
 ifeq ($(CONFIG_MTK_CPU_CTRL),y)
 obj-y += cpu_ctrl.o
-else
-obj-y += cpu_ctrl_dummy.o
-endif # CONFIG_MTK_CPU_CTRL
+endif
 
 ifeq ($(CONFIG_MACH_MT6893),y)
 ccflags-y += \
