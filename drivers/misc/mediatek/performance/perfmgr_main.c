@@ -82,8 +82,9 @@ static int __init init_perfmgr(void)
 	init_boostctrl(perfmgr_root);
 	init_tchbst(perfmgr_root);
 	init_perfctl(perfmgr_root);
+#ifdef CONFIG_MTK_SYSLIMITER
 	syslimiter_init(perfmgr_root);
-
+#endif
 #ifdef CONFIG_MTK_LOAD_TRACKER
 	init_uload_ind(NULL);
 #endif
