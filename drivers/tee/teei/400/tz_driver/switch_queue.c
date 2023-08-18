@@ -190,7 +190,9 @@ int teei_switch_fn(void *work)
 		if (retVal == 1)
 			continue;
 
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 		teei_notify_log_fn();
+#endif
 
 #ifdef CONFIG_MICROTRUST_DYNAMIC_CORE
 		/* Bind the teei switch thread to current CPU */

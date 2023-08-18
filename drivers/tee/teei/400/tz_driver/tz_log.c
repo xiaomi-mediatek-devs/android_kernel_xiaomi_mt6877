@@ -33,12 +33,13 @@
 #define TEE_LOG_TYPE	0x10
 
 struct tz_log_state *g_tz_log_state;
+
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 static struct completion teei_log_comp;
 
 int init_tlog_comp_fn(void)
 {
 	init_completion(&teei_log_comp);
-
 	return 0;
 }
 
@@ -47,6 +48,7 @@ void teei_notify_log_fn(void)
 	if (!completion_done(&teei_log_comp))
 		complete(&teei_log_comp);
 }
+#endif
 
 static int __tz_driver_read_logs(struct tz_log_state *s, char *buffer,
 				uint32_t get, unsigned int cnt)
@@ -201,15 +203,14 @@ static void tz_driver_dump_logs(struct tz_log_state *s)
 	s->get = get;
 }
 
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 int teei_log_fn(void *work)
 {
 	int retVal = 0;
-#ifdef CONFIG_MICROTRUST_TZ_LOG
 	struct tz_log_state *s;
 	unsigned long flags;
 
 	s = g_tz_log_state;
-#endif
 
 	while (1) {
 		if (switch_input_index == switch_output_index) {
@@ -219,15 +220,13 @@ int teei_log_fn(void *work)
 				continue;
 		}
 
-#ifdef CONFIG_MICROTRUST_TZ_LOG
 		msleep(20);
 		tz_driver_dump_logs(s);
-#endif
-
 	}
 
 	return NOTIFY_OK;
 }
+#endif
 
 static int tz_log_panic_notify(struct notifier_block *nb,
 				   unsigned long action, void *data)
