@@ -177,4 +177,9 @@ extern void mt_gpufreq_input_boost_notify_registerCB(
 extern unsigned int (*ged_kpi_get_limit_user_fp)(
 		unsigned int limit_user);
 
+/**
+ * GED_SKI_SUPPORT
+ */
+extern int mt_gpufreq_get_gpu_temp(void);
+
 #endif /* ___MT_GPUFREQ_PLAT_H___ */

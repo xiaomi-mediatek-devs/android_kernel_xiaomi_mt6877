@@ -66,6 +66,7 @@ extern unsigned int mt_gpufreq_get_max_power(void);
 extern unsigned int mt_gpufreq_get_min_power(void);
 extern unsigned int mt_gpufreq_get_thermal_limit_index(void);
 extern unsigned int mt_gpufreq_get_thermal_limit_freq(void);
+extern int mt_gpufreq_get_gpu_temp(void);
 extern void mt_gpufreq_set_power_limit_by_pbm(unsigned int limited_power);
 extern unsigned int mt_gpufreq_get_leakage_mw(void);
 extern int mt_gpufreq_get_cur_ceiling_idx(void);

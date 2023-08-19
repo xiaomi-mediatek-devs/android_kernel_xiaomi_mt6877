@@ -1569,6 +1569,15 @@ unsigned int mt_gpufreq_get_cur_volt(void)
 }
 EXPORT_SYMBOL(mt_gpufreq_get_cur_volt);
 
+/*
+ * API : get current GPU temperature
+ */
+int mt_gpufreq_get_gpu_temp(void)
+{
+	return get_immediate_gpu_wrap();
+}
+EXPORT_SYMBOL(mt_gpufreq_get_gpu_temp);
+
 /* API : get Thermal/Power/PBM limited OPP table index */
 int mt_gpufreq_get_cur_ceiling_idx(void)
 {
