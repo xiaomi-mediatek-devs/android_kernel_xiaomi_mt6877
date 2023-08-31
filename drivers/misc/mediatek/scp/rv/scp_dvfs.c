@@ -776,15 +776,26 @@ void mt_scp_dvfs_state_dump(void)
 	char *scp_status = 0;
 
 	scp_state = readl(SCP_A_SLEEP_DEBUG_REG);
-	scp_status = ((scp_state & IN_DEBUG_IDLE) == IN_DEBUG_IDLE) ? "idle mode"
-			: ((scp_state & ENTERING_SLEEP) == ENTERING_SLEEP) ?
-				"enter sleep"
-			: ((scp_state & IN_SLEEP) == IN_SLEEP) ?
-				"sleep mode"
-			: ((scp_state & ENTERING_ACTIVE) == ENTERING_ACTIVE) ?
-				"enter active"
-			: ((scp_state & IN_ACTIVE) == IN_ACTIVE) ?
-				"active mode" : "none of state";
+	switch (scp_state & (IN_DEBUG_IDLE | ENTERING_SLEEP | IN_SLEEP | ENTERING_ACTIVE | IN_ACTIVE)) {
+		case IN_DEBUG_IDLE:
+			scp_status = "idle mode";
+			break;
+		case ENTERING_SLEEP:
+			scp_status = "enter sleep";
+			break;
+		case IN_SLEEP:
+			scp_status = "sleep mode";
+			break;
+		case ENTERING_ACTIVE:
+			scp_status = "enter active";
+			break;
+		case IN_ACTIVE:
+			scp_status = "active mode";
+			break;
+		default:
+			scp_status = "none of state";
+			break;
+	}
 
 	if (dvfs.vlp_support) {
 		slp_pwr_ctrl = readl(SCP_SLP_PWR_CTRL);
