@@ -21,6 +21,7 @@
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
 #include <linux/usb/otg.h>
+#include <linux/usb/role.h>
 
 struct mtu3;
 struct mtu3_ep;
@@ -252,6 +253,8 @@ struct otg_switch_mtk {
 	bool is_u3_drd;
 	bool manual_drd_enabled;
 	u32 sw_state;
+	bool usb_data_enabled;
+	enum usb_role last_role;
 };
 
 /**

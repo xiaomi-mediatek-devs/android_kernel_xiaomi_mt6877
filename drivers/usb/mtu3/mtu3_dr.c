@@ -432,6 +432,11 @@ static int ssusb_role_sw_set(struct device *dev, enum usb_role role)
 
 	dev_info(ssusb->dev, "role_sw role %d\n", role);
 
+	otg_sx->last_role = role;
+
+	if (!otg_sx->usb_data_enabled)
+		return 0;
+
 	id_event = (role == USB_ROLE_HOST);
 	vbus_event = (role == USB_ROLE_DEVICE);
 
@@ -543,6 +548,43 @@ static int ssusb_role_sw_register(struct otg_switch_mtk *otg_sx)
 	return PTR_ERR_OR_ZERO(otg_sx->role_sw);
 }
 
+static ssize_t usb_data_enabled_show(struct device *dev,
+				struct device_attribute *attr,
+				char *buf)
+{
+	struct ssusb_mtk *ssusb = dev_get_drvdata(dev);
+	struct otg_switch_mtk *otg_sx = &ssusb->otg_switch;
+
+	return sprintf(buf, "%d\n", otg_sx->usb_data_enabled);
+}
+
+static ssize_t usb_data_enabled_store(struct device *dev,
+				 struct device_attribute *attr,
+				 const char *buf, size_t count)
+{
+	struct ssusb_mtk *ssusb = dev_get_drvdata(dev);
+	struct otg_switch_mtk *otg_sx = &ssusb->otg_switch;
+	enum usb_role role = otg_sx->last_role;
+	bool enabled;
+
+	if (kstrtobool(buf, &enabled))
+		return -EINVAL;
+
+	if (!enabled) {
+		ssusb_role_sw_set(dev, USB_ROLE_NONE);
+		otg_sx->usb_data_enabled = false;
+		otg_sx->last_role = role;
+	}
+	else {
+		otg_sx->usb_data_enabled = true;
+		ssusb_role_sw_set(dev, otg_sx->last_role);
+	}
+
+	return count;
+}
+
+static DEVICE_ATTR_RW(usb_data_enabled);
+
 static ssize_t max_speed_store(struct device *dev,
 				 struct device_attribute *attr,
 				 const char *buf, size_t count)
@@ -614,6 +656,7 @@ static ssize_t saving_show(struct device *dev,
 static DEVICE_ATTR_RW(saving);
 
 static struct attribute *ssusb_dr_attrs[] = {
+	&dev_attr_usb_data_enabled.attr,
 	&dev_attr_max_speed.attr,
 	&dev_attr_saving.attr,
 	NULL
@@ -630,6 +673,9 @@ int ssusb_otg_switch_init(struct ssusb_mtk *ssusb)
 
 	INIT_WORK(&otg_sx->id_work, ssusb_id_work);
 	INIT_WORK(&otg_sx->vbus_work, ssusb_vbus_work);
+
+	/* set the initial value */
+	otg_sx->usb_data_enabled = true;
 
 	/* default as host, update state */
 	otg_sx->sw_state = ssusb->is_host ?
