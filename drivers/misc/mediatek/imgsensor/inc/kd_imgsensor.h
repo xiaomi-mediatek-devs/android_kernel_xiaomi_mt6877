@@ -618,6 +618,8 @@ void KD_IMGSENSOR_PROFILE_I2C(char *tag, int trans_num);
 /* ruby camera*/
 #define S5KHPXSEMCO_SENSOR_ID                        0x1B70
 #define SENSOR_DRVNAME_S5KHPXSEMCO_MIPI_RAW          "s5khpxsemco_mipi_raw"
+#define S5KHPXOFILM_SENSOR_ID                        0x1B71
+#define SENSOR_DRVNAME_S5KHPXOFILM_MIPI_RAW          "s5khpxofilm_mipi_raw"
 #define IMX766SUNNY_SENSOR_ID                        0x0766
 #define SENSOR_DRVNAME_IMX766SUNNY_MIPI_RAW          "imx766sunny_mipi_raw"
 #define IMX766OFILM_SENSOR_ID                        0x0767

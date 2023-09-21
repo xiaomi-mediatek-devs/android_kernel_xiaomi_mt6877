@@ -2,7 +2,7 @@
  *
  * Filename:
  * ---------
- *	 S5KHPXSEMCOmipiraw_sensor.c
+ *	 S5KHPXOFILMmipiraw_sensor.c
  *
  * Project:
  * --------
@@ -33,7 +33,7 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 #include <linux/slab.h>
-#include "s5khpxsemcomipiraw_Sensor.h"
+#include "s5khpxofilmmipiraw_Sensor.h"
 
 #define ENABLE_PDAF 1
 #define EEPROM_SLAVE_ID 0xA2
@@ -51,17 +51,17 @@
 #define AWB_G_GAIN_ADDR 0x0D84
 #define AWB_B_GAIN_ADDR 0x0D86
 
-#define LOG_TAG "s5khpxsemco"
-#define S5KHPXSEMCO_LOG_INF(format, args...) pr_err(LOG_TAG "[%s] " format, __func__, ##args)
-#define S5KHPXSEMCO_LOG_DBG(format, args...) pr_debug(LOG_TAG "[%s] " format, __func__, ##args)
-#define VENDOR_ID 0x03
+#define LOG_TAG "s5khpxofilm"
+#define S5KHPXOFILM_LOG_INF(format, args...) pr_err(LOG_TAG "[%s] " format, __func__, ##args)
+#define S5KHPXOFILM_LOG_DBG(format, args...) pr_debug(LOG_TAG "[%s] " format, __func__, ##args)
+#define VENDOR_ID 0x07
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 static bool bIsLongExposure = KAL_FALSE;
-kal_uint32 sensor_version = 0;
+extern kal_uint32 sensor_version;
 
 static struct imgsensor_info_struct imgsensor_info = {
-	.sensor_id = S5KHPXSEMCO_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
+	.sensor_id = S5KHPXOFILM_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
 
 	.checksum_value = 0x47a75476,		//checksum value for Camera Auto Test
 
@@ -340,15 +340,17 @@ static kal_uint32 return_sensor_id(void)
 
 	if (VENDOR_ID != imgsensor.vendor_id)
 		sensor_id = 0xFFFF;
+	else if (sensor_id == S5KHPXSEMCO_SENSOR_ID)
+		sensor_id = S5KHPXOFILM_SENSOR_ID;
 
-	S5KHPXSEMCO_LOG_INF("[%s] sensor_id: 0x%x,sensor_version:0x%x,vendor_id:0x%x\n", __func__, sensor_id, sensor_version, imgsensor.vendor_id);
+	S5KHPXOFILM_LOG_INF("[%s] sensor_id: 0x%x,sensor_version:0x%x,vendor_id:0x%x\n", __func__, sensor_id, sensor_version, imgsensor.vendor_id);
 
 	return sensor_id;
 }
 
 static void set_dummy(void)
 {
-	S5KHPXSEMCO_LOG_DBG("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
+	S5KHPXOFILM_LOG_DBG("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
 	/* you can set dummy by imgsensor.dummy_line and imgsensor.dummy_pixel, or you can set dummy by imgsensor.frame_length and imgsensor.line_length */
 //	write_cmos_sensor(GROUP_HOLD_ADDR, 0x1);
 //	write_cmos_sensor(LINE_LENGTH_PIXEL_ADDR, imgsensor.line_length & 0xFFFF);
@@ -363,7 +365,7 @@ static void set_max_framerate(UINT16 framerate, kal_bool min_framelength_en)
 	kal_uint32 frame_length = imgsensor.frame_length;
 	//unsigned long flags;
 
-	S5KHPXSEMCO_LOG_DBG("framerate = %d, min framelength =%d, should enable? \n", framerate, min_framelength_en);
+	S5KHPXOFILM_LOG_DBG("framerate = %d, min framelength =%d, should enable? \n", framerate, min_framelength_en);
 
 	frame_length = imgsensor.pclk / framerate * 10 / imgsensor.line_length;
 	spin_lock(&imgsensor_drv_lock);
@@ -451,7 +453,7 @@ static void write_shutter(kal_uint32 shutter)
 		/* Update Shutter*/
 		write_cmos_sensor(0x0202, shutter);
 	}
-	S5KHPXSEMCO_LOG_DBG("Exit! shutter =%d, framelength =%d\n", shutter, imgsensor.frame_length);
+	S5KHPXOFILM_LOG_DBG("Exit! shutter =%d, framelength =%d\n", shutter, imgsensor.frame_length);
 }
 
 /*************************************************************************
@@ -538,7 +540,7 @@ static void set_shutter_frame_length(kal_uint16 shutter, kal_uint16 frame_length
 	write_cmos_sensor(COARSE_INTEGRATION_TIME_SHIFT_ADDR, (Rshift << 8) & 0xFFFF);
 	write_cmos_sensor(GROUP_HOLD_ADDR, 0x01);
 
-	S5KHPXSEMCO_LOG_DBG("set shutter =%d, framelength =%d\n", shutter, imgsensor.frame_length);
+	S5KHPXOFILM_LOG_DBG("set shutter =%d, framelength =%d\n", shutter, imgsensor.frame_length);
 }
 
 #define FACTOR 992.0f//(15.5f　* 64.0f)
@@ -569,7 +571,7 @@ static void set_awb_gain(struct SET_SENSOR_AWB_GAIN *pSetSensorAWB)
     write_cmos_sensor(AWB_G_GAIN_ADDR, g_Gain * 2);
     write_cmos_sensor(AWB_B_GAIN_ADDR, b_Gain * 2);
 
-    S5KHPXSEMCO_LOG_INF("write awb gain r:g:b %d:%d:%d \n", r_Gain, g_Gain, b_Gain);
+    S5KHPXOFILM_LOG_INF("write awb gain r:g:b %d:%d:%d \n", r_Gain, g_Gain, b_Gain);
 }
 
 /*************************************************************************
@@ -593,9 +595,9 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	kal_uint16 reg_gain;
 	kal_uint32 reg_dig_gain;
 	kal_uint16 max_gain = imgsensor_info.max_gain;
-	S5KHPXSEMCO_LOG_INF("set_gain %d \n", gain);
+	S5KHPXOFILM_LOG_INF("set_gain %d \n", gain);
 	if (gain < imgsensor_info.min_gain || gain > imgsensor_info.max_gain) {
-		S5KHPXSEMCO_LOG_INF("Error gain setting");
+		S5KHPXOFILM_LOG_INF("Error gain setting");
 
 		if (gain < imgsensor_info.min_gain)
 			gain = imgsensor_info.min_gain;
@@ -607,7 +609,7 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.gain = reg_gain;
 	spin_unlock(&imgsensor_drv_lock);
-	S5KHPXSEMCO_LOG_DBG("gain = %d , reg_gain = 0x%x\n ", gain, reg_gain);
+	S5KHPXOFILM_LOG_DBG("gain = %d , reg_gain = 0x%x\n ", gain, reg_gain);
 
 	if (imgsensor.current_scenario_id == MSDK_SCENARIO_ID_CUSTOM4) {
 		// full mode max AGain is 16x
@@ -629,7 +631,7 @@ static kal_uint16 set_gain(kal_uint16 gain)
 
 static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gain)
 {
-	S5KHPXSEMCO_LOG_DBG("le:0x%x, se:0x%x, gain:0x%x\n", le, se, gain);
+	S5KHPXOFILM_LOG_DBG("le:0x%x, se:0x%x, gain:0x%x\n", le, se, gain);
 	if (imgsensor.ihdr_en) {
 		spin_lock(&imgsensor_drv_lock);
 		if (le > imgsensor.min_frame_length - imgsensor_info.margin)
@@ -687,7 +689,7 @@ static void night_mode(kal_bool enable)
 
 static kal_uint32 streaming_control(kal_bool enable)
 {
- S5KHPXSEMCO_LOG_INF("streaming_enable(0=Sw Standby,1=streaming): %d\n", enable);
+ S5KHPXOFILM_LOG_INF("streaming_enable(0=Sw Standby,1=streaming): %d\n", enable);
  write_cmos_sensor(0x6028, 0x4000);
 
  if (enable) {
@@ -768,89 +770,89 @@ static void sensor_init(void)
 	write_cmos_sensor(0xA102, 0x0000);
 
 	if ((0x1F01 == sensor_version) || (0x3F00 == sensor_version)) {
-		S5KHPXSEMCO_LOG_INF("loading mp setting+\n");
-		table_write_cmos_sensor(s5khpxsemco_init_setting_mp,
-				sizeof(s5khpxsemco_init_setting_mp) / sizeof(kal_uint16));
-		S5KHPXSEMCO_LOG_INF("loading mp setting-\n");
+		S5KHPXOFILM_LOG_INF("loading mp setting+\n");
+		table_write_cmos_sensor(s5khpxofilm_init_setting_mp,
+				sizeof(s5khpxofilm_init_setting_mp) / sizeof(kal_uint16));
+		S5KHPXOFILM_LOG_INF("loading mp setting-\n");
 	} else {
-		S5KHPXSEMCO_LOG_INF("loading evt setting+\n");
-		table_write_cmos_sensor(s5khpxsemco_init_setting_evt,
-				sizeof(s5khpxsemco_init_setting_evt) / sizeof(kal_uint16));
-		S5KHPXSEMCO_LOG_INF("loading evt setting-\n");
+		S5KHPXOFILM_LOG_INF("loading evt setting+\n");
+		table_write_cmos_sensor(s5khpxofilm_init_setting_evt,
+				sizeof(s5khpxofilm_init_setting_evt) / sizeof(kal_uint16));
+		S5KHPXOFILM_LOG_INF("loading evt setting-\n");
 	}
 
 	// Global
-	S5KHPXSEMCO_LOG_INF("loading global setting+\n");
-	table_write_cmos_sensor(s5khpxsemco_init_setting_global,
-			sizeof(s5khpxsemco_init_setting_global) / sizeof(kal_uint16));
-	S5KHPXSEMCO_LOG_INF("loading global setting-\n");
+	S5KHPXOFILM_LOG_INF("loading global setting+\n");
+	table_write_cmos_sensor(s5khpxofilm_init_setting_global,
+			sizeof(s5khpxofilm_init_setting_global) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("loading global setting-\n");
 }	/*	sensor_init  */
 
 static void preview_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("+\n");
-	table_write_cmos_sensor(s5khpxsemco_preview_setting,
-			sizeof(s5khpxsemco_preview_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("+\n");
+	table_write_cmos_sensor(s5khpxofilm_preview_setting,
+			sizeof(s5khpxofilm_preview_setting) / sizeof(kal_uint16));
 
-	S5KHPXSEMCO_LOG_INF("-\n");
+	S5KHPXOFILM_LOG_INF("-\n");
 }	/*	preview_setting  */
 
 static void capture_setting(kal_uint16 currefps)
 {
-	S5KHPXSEMCO_LOG_INF("capture setting E\n");
-	table_write_cmos_sensor(s5khpxsemco_preview_setting,
-			sizeof(s5khpxsemco_preview_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("capture setting E\n");
+	table_write_cmos_sensor(s5khpxofilm_preview_setting,
+			sizeof(s5khpxofilm_preview_setting) / sizeof(kal_uint16));
 }	/*	capture_setting  */
 
 
 static void normal_video_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E!\n");
-	table_write_cmos_sensor(s5khpxsemco_normal_video_setting,
-			sizeof(s5khpxsemco_normal_video_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("E!\n");
+	table_write_cmos_sensor(s5khpxofilm_normal_video_setting,
+			sizeof(s5khpxofilm_normal_video_setting) / sizeof(kal_uint16));
 }
 
 static void hs_video_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 
-	table_write_cmos_sensor(s5khpxsemco_hs_video_setting,
-		sizeof(s5khpxsemco_hs_video_setting) / sizeof(kal_uint16));
+	table_write_cmos_sensor(s5khpxofilm_hs_video_setting,
+		sizeof(s5khpxofilm_hs_video_setting) / sizeof(kal_uint16));
 }
 
 static void slim_video_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 	preview_setting();
 }
 
 static void custom1_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
-	table_write_cmos_sensor(s5khpxsemco_custom1_setting,
-		sizeof(s5khpxsemco_custom1_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("E\n");
+	table_write_cmos_sensor(s5khpxofilm_custom1_setting,
+		sizeof(s5khpxofilm_custom1_setting) / sizeof(kal_uint16));
 }
 
 static void custom2_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
-	table_write_cmos_sensor(s5khpxsemco_custom2_setting,
-			sizeof(s5khpxsemco_custom2_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("E\n");
+	table_write_cmos_sensor(s5khpxofilm_custom2_setting,
+			sizeof(s5khpxofilm_custom2_setting) / sizeof(kal_uint16));
 }
 
 static void custom3_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 
-	table_write_cmos_sensor(s5khpxsemco_custom3_setting,
-			sizeof(s5khpxsemco_custom3_setting) / sizeof(kal_uint16));
+	table_write_cmos_sensor(s5khpxofilm_custom3_setting,
+			sizeof(s5khpxofilm_custom3_setting) / sizeof(kal_uint16));
 }
 
 static void custom4_setting(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
-	table_write_cmos_sensor(s5khpxsemco_custom4_setting,
-			sizeof(s5khpxsemco_custom4_setting) / sizeof(kal_uint16));
+	S5KHPXOFILM_LOG_INF("E\n");
+	table_write_cmos_sensor(s5khpxofilm_custom4_setting,
+			sizeof(s5khpxofilm_custom4_setting) / sizeof(kal_uint16));
 }
 
 /*************************************************************************
@@ -874,7 +876,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
-	S5KHPXSEMCO_LOG_INF("S5KHPXSEMCO get_imgsensor_id in\n");
+	S5KHPXOFILM_LOG_INF("S5KHPXOFILM get_imgsensor_id in\n");
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
@@ -884,11 +886,11 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			*sensor_id = return_sensor_id();
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				// read_cali_data_from_eeprom();//read calibration data
-				S5KHPXSEMCO_LOG_INF("probe success, i2c write id: 0x%x, sensor id: 0x%x\n",
+				S5KHPXOFILM_LOG_INF("probe success, i2c write id: 0x%x, sensor id: 0x%x\n",
 					imgsensor.i2c_write_id, *sensor_id);
 				return ERROR_NONE;
 			} else {
-				S5KHPXSEMCO_LOG_INF("Read sensor id fail,i2c write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
+				S5KHPXOFILM_LOG_INF("Read sensor id fail,i2c write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, *sensor_id);
 			}
 			retry--;
 		} while (retry > 0);
@@ -925,7 +927,7 @@ static kal_uint32 open(void)
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
 	kal_uint16 sensor_id = 0;
-	S5KHPXSEMCO_LOG_INF("PLATFORM:MT6877, MIPI 3LANE\n");
+	S5KHPXOFILM_LOG_INF("PLATFORM:MT6877, MIPI 3LANE\n");
 
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
@@ -934,10 +936,10 @@ static kal_uint32 open(void)
 		do {
 			sensor_id = return_sensor_id();
 			if ((sensor_id == imgsensor_info.sensor_id) || (sensor_id == 0x1b73)) {
-				S5KHPXSEMCO_LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id, sensor_id);
+				S5KHPXOFILM_LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id, sensor_id);
 				break;
 			}
-			S5KHPXSEMCO_LOG_INF("Read sensor id fail,i2c write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, sensor_id);
+			S5KHPXOFILM_LOG_INF("Read sensor id fail,i2c write id: 0x%x, id: 0x%x\n", imgsensor.i2c_write_id, sensor_id);
 			retry--;
 		} while (retry > 0);
 		i++;
@@ -990,7 +992,7 @@ static kal_uint32 open(void)
 *************************************************************************/
 static kal_uint32 close(void)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 
 	/*No Need to implement this function*/
 
@@ -1017,7 +1019,7 @@ static kal_uint32 close(void)
 static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading preview_setting\n");
+	S5KHPXOFILM_LOG_INF("loading preview_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_PREVIEW;
@@ -1051,7 +1053,7 @@ static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 						  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading capture_setting\n");
+	S5KHPXOFILM_LOG_INF("loading capture_setting\n");
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_CAPTURE;
 	{
@@ -1071,7 +1073,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading normal_video_setting\n");
+	S5KHPXOFILM_LOG_INF("loading normal_video_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_VIDEO;
@@ -1091,7 +1093,7 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 static kal_uint32 hs_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading hs_video_setting\n");
+	S5KHPXOFILM_LOG_INF("loading hs_video_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_HIGH_SPEED_VIDEO;
@@ -1111,7 +1113,7 @@ static kal_uint32 hs_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 static kal_uint32 slim_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_SLIM_VIDEO;
@@ -1132,7 +1134,7 @@ static kal_uint32 custom1(
 	MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading custom1_setting\n");
+	S5KHPXOFILM_LOG_INF("loading custom1_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_CUSTOM1;
@@ -1153,7 +1155,7 @@ static kal_uint32 custom2(
 	MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading custom2_setting\n");
+	S5KHPXOFILM_LOG_INF("loading custom2_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_CUSTOM2;
@@ -1174,7 +1176,7 @@ static kal_uint32 custom3(
 	MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading custom3_setting\n");
+	S5KHPXOFILM_LOG_INF("loading custom3_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_CUSTOM3;
@@ -1195,7 +1197,7 @@ static kal_uint32 custom4(
 	MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("loading custom4_setting\n");
+	S5KHPXOFILM_LOG_INF("loading custom4_setting\n");
 
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_CUSTOM4;
@@ -1214,7 +1216,7 @@ static kal_uint32 custom4(
 
 static kal_uint32 get_resolution(MSDK_SENSOR_RESOLUTION_INFO_STRUCT *sensor_resolution)
 {
-	S5KHPXSEMCO_LOG_INF("E\n");
+	S5KHPXOFILM_LOG_INF("E\n");
 	sensor_resolution->SensorFullWidth = imgsensor_info.cap.grabwindow_width;
 	sensor_resolution->SensorFullHeight = imgsensor_info.cap.grabwindow_height;
 
@@ -1249,7 +1251,7 @@ static kal_uint32 get_info(enum MSDK_SCENARIO_ID_ENUM scenario_id,
 					  MSDK_SENSOR_INFO_STRUCT *sensor_info,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("scenario_id = %d\n", scenario_id);
+	S5KHPXOFILM_LOG_INF("scenario_id = %d\n", scenario_id);
 
 	sensor_info->SensorClockPolarity = SENSOR_CLOCK_POLARITY_LOW;
 	sensor_info->SensorClockFallingPolarity = SENSOR_CLOCK_POLARITY_LOW; /* not use */
@@ -1382,7 +1384,7 @@ static kal_uint32 get_info(enum MSDK_SCENARIO_ID_ENUM scenario_id,
 static kal_uint32 control(enum MSDK_SCENARIO_ID_ENUM scenario_id, MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
-	S5KHPXSEMCO_LOG_INF("scenario_id = %d\n", scenario_id);
+	S5KHPXOFILM_LOG_INF("scenario_id = %d\n", scenario_id);
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.current_scenario_id = scenario_id;
 	spin_unlock(&imgsensor_drv_lock);
@@ -1415,7 +1417,7 @@ static kal_uint32 control(enum MSDK_SCENARIO_ID_ENUM scenario_id, MSDK_SENSOR_EX
 		custom4(image_window, sensor_config_data);
 		break;
 	default:
-		S5KHPXSEMCO_LOG_INF("Error ScenarioId setting");
+		S5KHPXOFILM_LOG_INF("Error ScenarioId setting");
 		preview(image_window, sensor_config_data);
 		return ERROR_INVALID_SCENARIO_ID;
 	}
@@ -1424,7 +1426,7 @@ static kal_uint32 control(enum MSDK_SCENARIO_ID_ENUM scenario_id, MSDK_SENSOR_EX
 
 static kal_uint32 set_video_mode(UINT16 framerate)
 {
-	S5KHPXSEMCO_LOG_DBG("framerate = %d\n ", framerate);
+	S5KHPXOFILM_LOG_DBG("framerate = %d\n ", framerate);
 	// SetVideoMode Function should fix framerate
 	if (framerate == 0)
 		// Dynamic frame rate
@@ -1444,7 +1446,7 @@ static kal_uint32 set_video_mode(UINT16 framerate)
 
 static kal_uint32 set_auto_flicker_mode(kal_bool enable, UINT16 framerate)
 {
-	S5KHPXSEMCO_LOG_DBG("enable = %d, framerate = %d \n", enable, framerate);
+	S5KHPXOFILM_LOG_DBG("enable = %d, framerate = %d \n", enable, framerate);
 	spin_lock(&imgsensor_drv_lock);
 	if (enable) //enable auto flicker
 		imgsensor.autoflicker_en = KAL_TRUE;
@@ -1458,7 +1460,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 {
 	kal_uint32 frame_length;
 
-	S5KHPXSEMCO_LOG_DBG("scenario_id = %d, framerate = %d\n", scenario_id, framerate);
+	S5KHPXOFILM_LOG_DBG("scenario_id = %d, framerate = %d\n", scenario_id, framerate);
 
 	switch (scenario_id) {
 	case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
@@ -1472,7 +1474,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			 set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 	case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
@@ -1488,7 +1490,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			 set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 	case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
@@ -1503,7 +1505,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			 set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 	case MSDK_SCENARIO_ID_HIGH_SPEED_VIDEO:
@@ -1517,7 +1519,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			 set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 	case MSDK_SCENARIO_ID_SLIM_VIDEO:
@@ -1531,7 +1533,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			 set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 	case MSDK_SCENARIO_ID_CUSTOM1:
@@ -1546,7 +1548,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 
@@ -1562,7 +1564,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 
@@ -1578,7 +1580,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 
@@ -1594,7 +1596,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_DBG("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
 		break;
 
@@ -1609,9 +1611,9 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 			set_dummy();
 		} else {
 			/*No need to set*/
-			S5KHPXSEMCO_LOG_INF("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
+			S5KHPXOFILM_LOG_INF("frame_length %d < shutter %d", imgsensor.frame_length, imgsensor.shutter);
 		}
-		S5KHPXSEMCO_LOG_INF("error scenario_id = %d, we use preview scenario \n", scenario_id);
+		S5KHPXOFILM_LOG_INF("error scenario_id = %d, we use preview scenario \n", scenario_id);
 		break;
 	}
 	return ERROR_NONE;
@@ -1619,7 +1621,7 @@ static kal_uint32 set_max_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scena
 
 static kal_uint32 get_default_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM scenario_id, MUINT32 *framerate)
 {
-	S5KHPXSEMCO_LOG_INF("scenario_id = %d\n", scenario_id);
+	S5KHPXOFILM_LOG_INF("scenario_id = %d\n", scenario_id);
 
 	switch (scenario_id) {
 	case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
@@ -1658,7 +1660,7 @@ static kal_uint32 get_default_framerate_by_scenario(enum MSDK_SCENARIO_ID_ENUM s
 
 static kal_uint32 set_test_pattern_mode(kal_bool enable)
 {
-	S5KHPXSEMCO_LOG_INF("enable: %d\n", enable);
+	S5KHPXOFILM_LOG_INF("enable: %d\n", enable);
 
 	if (enable) {
 		// 0x5081[0]: 1 enable,  0 disable
@@ -1691,7 +1693,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	struct SET_PD_BLOCK_INFO_T *PDAFinfo;
 #endif
 
-	S5KHPXSEMCO_LOG_DBG("feature_id = %d\n", feature_id);
+	S5KHPXOFILM_LOG_DBG("feature_id = %d\n", feature_id);
 	switch (feature_id) {
 	case SENSOR_FEATURE_GET_GAIN_RANGE_BY_SCENARIO:
 		*(feature_data + 1) = imgsensor_info.min_gain;
@@ -1857,19 +1859,19 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		*feature_para_len = 4;
 		break;
 	case SENSOR_FEATURE_SET_FRAMERATE:
-		S5KHPXSEMCO_LOG_INF("current fps :%d\n", (UINT32)*feature_data);
+		S5KHPXOFILM_LOG_INF("current fps :%d\n", (UINT32)*feature_data);
 		spin_lock(&imgsensor_drv_lock);
 		imgsensor.current_fps = *feature_data;
 		spin_unlock(&imgsensor_drv_lock);
 		break;
 	case SENSOR_FEATURE_SET_HDR:
-		S5KHPXSEMCO_LOG_INF("ihdr enable :%d\n", (BOOL)*feature_data);
+		S5KHPXOFILM_LOG_INF("ihdr enable :%d\n", (BOOL)*feature_data);
 		spin_lock(&imgsensor_drv_lock);
 		imgsensor.ihdr_en = (BOOL)*feature_data;
 		spin_unlock(&imgsensor_drv_lock);
 		break;
 	case SENSOR_FEATURE_GET_CROP_INFO:
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_GET_CROP_INFO scenarioId:%d\n", (UINT32)*feature_data);
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_GET_CROP_INFO scenarioId:%d\n", (UINT32)*feature_data);
 
 		wininfo = (struct SENSOR_WINSIZE_INFO_STRUCT *)(uintptr_t)(*(feature_data+1));
 
@@ -1905,7 +1907,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		}
 		break;
 	case SENSOR_FEATURE_SET_IHDR_SHUTTER_GAIN:
-		S5KHPXSEMCO_LOG_INF("SENSOR_SET_SENSOR_IHDR LE=%d, SE=%d, Gain=%d\n", (UINT16)*feature_data, (UINT16)*(feature_data + 1), (UINT16)*(feature_data + 2));
+		S5KHPXOFILM_LOG_INF("SENSOR_SET_SENSOR_IHDR LE=%d, SE=%d, Gain=%d\n", (UINT16)*feature_data, (UINT16)*(feature_data + 1), (UINT16)*(feature_data + 2));
 		ihdr_write_shutter_gain((UINT16)*feature_data, (UINT16)*(feature_data+1), (UINT16)*(feature_data+2));
 		break;
 	case SENSOR_FEATURE_SET_SHUTTER_FRAME_TIME:
@@ -1921,11 +1923,11 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		*(feature_data + 2) = imgsensor_info.margin;
 		break;
 	case SENSOR_FEATURE_SET_STREAMING_SUSPEND:
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_SET_STREAMING_SUSPEND\n");
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_SET_STREAMING_SUSPEND\n");
 		streaming_control(KAL_FALSE);
 		break;
 	case SENSOR_FEATURE_SET_STREAMING_RESUME:
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_SET_STREAMING_RESUME, shutter:%llu\n",
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_SET_STREAMING_RESUME, shutter:%llu\n",
 			*feature_data);
 		if (*feature_data != 0)
 			set_shutter(*feature_data);
@@ -1940,7 +1942,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 			*feature_return_para_32 = 1000; /*BINNING_AVERAGED*/
 			break;
 		}
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_GET_BINNING_TYPE AE_binning_type:%d,\n",
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_GET_BINNING_TYPE AE_binning_type:%d,\n",
 			*feature_return_para_32);
 		*feature_para_len = 4;
 
@@ -2017,11 +2019,11 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		break;
 	case SENSOR_FEATURE_GET_AE_EFFECTIVE_FRAME_FOR_LE:
 		*feature_return_para_32 = imgsensor.current_ae_effective_frame;
-		S5KHPXSEMCO_LOG_INF("GET AE EFFECTIVE %d\n", *feature_return_para_32);
+		S5KHPXOFILM_LOG_INF("GET AE EFFECTIVE %d\n", *feature_return_para_32);
 		break;
 	case SENSOR_FEATURE_GET_AE_FRAME_MODE_FOR_LE:
 		memcpy(feature_return_para_32, &imgsensor.ae_frm_mode, sizeof(struct IMGSENSOR_AE_FRM_MODE));
-		S5KHPXSEMCO_LOG_INF("GET_AE_FRAME_MODE");
+		S5KHPXOFILM_LOG_INF("GET_AE_FRAME_MODE");
 	case SENSOR_FEATURE_GET_MIPI_PIXEL_RATE:
 
 		switch (*feature_data) {
@@ -2065,7 +2067,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		}
 		break;
 	case SENSOR_FEATURE_GET_VC_INFO2:
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_GET_VC_INFO %d\n",
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_GET_VC_INFO %d\n",
 			(UINT16) *feature_data);
 		pvcinfo2 = (struct SENSOR_VC_INFO2_STRUCT *) (uintptr_t) (*(feature_data + 1));
 		switch (*feature_data_32) {
@@ -2093,11 +2095,11 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 #if ENABLE_PDAF
 
 	case SENSOR_FEATURE_GET_PDAF_DATA:
-		S5KHPXSEMCO_LOG_INF("odin GET_PDAF_DATA EEPROM\n");
+		S5KHPXOFILM_LOG_INF("odin GET_PDAF_DATA EEPROM\n");
 		break;
 
 	case SENSOR_FEATURE_GET_PDAF_INFO:
-		S5KHPXSEMCO_LOG_INF("SENSOR_FEATURE_GET_PDAF_INFO scenarioId:%d\n",
+		S5KHPXOFILM_LOG_INF("SENSOR_FEATURE_GET_PDAF_INFO scenarioId:%d\n",
 			(UINT16) *feature_data);
 		PDAFinfo = (struct SET_PD_BLOCK_INFO_T *)(uintptr_t)(*(feature_data+1));
 		switch (*feature_data) {
@@ -2144,7 +2146,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 		break;
 	case SENSOR_FEATURE_SET_PDAF:
 		imgsensor.pdaf_mode = *feature_data_16;
-		S5KHPXSEMCO_LOG_INF("[odin] pdaf mode : %d \n", imgsensor.pdaf_mode);
+		S5KHPXOFILM_LOG_INF("[odin] pdaf mode : %d \n", imgsensor.pdaf_mode);
 		break;
 	case SENSOR_FEATURE_GET_AWB_REQ_BY_SCENARIO:
 		switch (*feature_data) {
@@ -2179,11 +2181,11 @@ static struct SENSOR_FUNCTION_STRUCT sensor_func = {
 	close
 };
 
-UINT32 S5KHPXSEMCO_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
+UINT32 S5KHPXOFILM_MIPI_RAW_SensorInit(struct SENSOR_FUNCTION_STRUCT **pfFunc)
 {
-    S5KHPXSEMCO_LOG_INF("S5KHPXSEMCO_MIPI_RAW_SensorInit in\n");
+    S5KHPXOFILM_LOG_INF("S5KHPXOFILM_MIPI_RAW_SensorInit in\n");
 	/* To Do : Check Sensor status here */
 	if (pfFunc != NULL)
 		*pfFunc = &sensor_func;
 	return ERROR_NONE;
-}	/*	S5KHPXSEMCO_MIPI_RAW_SensorInit	*/
+}	/*	S5KHPXOFILM_MIPI_RAW_SensorInit	*/
