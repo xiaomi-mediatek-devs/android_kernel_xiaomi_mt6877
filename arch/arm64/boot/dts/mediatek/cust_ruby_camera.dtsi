@@ -396,7 +396,7 @@
 	cam4_pin_vcama = "regulator";
 	cam4_pin_vcamio = "regulator";
 
-	cam0_enable_sensor = "s5khpxsemco_mipi_raw imx766sunny_mipi_raw imx766ofilm_mipi_raw";
+	cam0_enable_sensor = "s5khpxsemco_mipi_raw s5khpxofilm_mipi_raw imx766sunny_mipi_raw imx766ofilm_mipi_raw";
 	cam1_enable_sensor = "ov16a1qsunny_mipi_raw ov16a1qofilm_mipi_raw";
 	cam2_enable_sensor = "s5k4h7sunny_mipi_raw s5k4h7ofilm_mipi_raw";
 	cam3_enable_sensor = "";

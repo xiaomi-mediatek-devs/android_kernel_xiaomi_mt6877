@@ -2,7 +2,7 @@
  *
  * Filename:
  * ---------
- *	 S5KHPXSEMCOmipi_Sensor.h
+ *	 S5KHPXOFILMmipi_Sensor.h
  *
  * Project:
  * --------
@@ -13,12 +13,12 @@
  *	 CMOS sensor header file
  *
  ****************************************************************************/
-#ifndef _S5KHPXSEMCOMIPI_SENSOR_H
-#define _S5KHPXSEMCOMIPI_SENSOR_H
+#ifndef _S5KHPXOFILMMIPI_SENSOR_H
+#define _S5KHPXOFILMMIPI_SENSOR_H
 #include <linux/types.h>
 #include "kd_camera_typedef.h"
 
-static kal_uint16 s5khpxsemco_init_setting_global[] = {
+static kal_uint16 s5khpxofilm_init_setting_global[] = {
 //global
 0xFCFC,	0x2000,
 0x516E,	0x0100,
@@ -1266,9 +1266,9 @@ static kal_uint16 s5khpxsemco_init_setting_global[] = {
 0xDEF2,	0x89C8,
 0xDEF4,	0x2006,
 0xDEF6,	0xC000,
-};//s5khpxsemco_init_setting_global
+};//s5khpxofilm_init_setting_global
 
-static kal_uint16 s5khpxsemco_init_setting_mp[] = {
+static kal_uint16 s5khpxofilm_init_setting_mp[] = {
 //mp
 0xFCFC,	0x2001,
 0xAAD4,	0x0000,
@@ -2596,9 +2596,9 @@ static kal_uint16 s5khpxsemco_init_setting_mp[] = {
 0x240E,	0x0000,
 0x2410,	0x7047,
 0x2412,	0x0000,
-};//s5khpxsemco_init_setting_mp
+};//s5khpxofilm_init_setting_mp
 
-static kal_uint16 s5khpxsemco_init_setting_evt[] = {
+static kal_uint16 s5khpxofilm_init_setting_evt[] = {
 //evt
 0xFCFC,	0x2001,
 0xAAD4,	0x0000,
@@ -10994,10 +10994,10 @@ static kal_uint16 s5khpxsemco_init_setting_evt[] = {
 0x240E,	0x0000,
 0x2410,	0x7047,
 0x2412,	0x0000,
-}; //s5khpxsemco_init_setting_evt
+}; //s5khpxofilm_init_setting_evt
 
 // 4080 x 3060@30fps 900Msps/Lane
-kal_uint16 s5khpxsemco_preview_setting[] = {
+kal_uint16 s5khpxofilm_preview_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -12165,10 +12165,10 @@ kal_uint16 s5khpxsemco_preview_setting[] = {
 0xF32A,	0x001C,
 0xF320,	0x001C,
 0xF32C,	0x001C,
-};//s5khpxsemco_preview_setting
+};//s5khpxofilm_preview_setting
 
 // 4000 x 2296@30fps 900Msps/lane
-static kal_uint16 s5khpxsemco_normal_video_setting[] = {
+static kal_uint16 s5khpxofilm_normal_video_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -13336,14 +13336,14 @@ static kal_uint16 s5khpxsemco_normal_video_setting[] = {
 0xF32A,	0x001C,
 0xF320,	0x001C,
 0xF32C,	0x001C,
-};//s5khpxsemco_normal_video_setting
+};//s5khpxofilm_normal_video_setting
 
-static kal_uint16 s5khpxsemco_capture_setting[] = {
+static kal_uint16 s5khpxofilm_capture_setting[] = {
 
 };
 
 // 1920 x 1080@240fps 1350Msps/Lane
-static kal_uint16 s5khpxsemco_hs_video_setting[] = {
+static kal_uint16 s5khpxofilm_hs_video_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -14511,10 +14511,10 @@ static kal_uint16 s5khpxsemco_hs_video_setting[] = {
 0xF32A,	0x0020,
 0xF320,	0x0020,
 0xF32C,	0x0020,
-};//s5khpxsemco_hs_video_setting
+};//s5khpxofilm_hs_video_setting
 
 // 4080 x 3060@24fps 900Msps/Lane
-static kal_uint16 s5khpxsemco_custom1_setting[] = {
+static kal_uint16 s5khpxofilm_custom1_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -15682,10 +15682,10 @@ static kal_uint16 s5khpxsemco_custom1_setting[] = {
 0xF32A,	0x001C,
 0xF320,	0x001C,
 0xF32C,	0x001C,
-};//s5khpxsemco_custom1_setting
+};//s5khpxofilm_custom1_setting
 
 // 1920 x 1080@120fps 900Msps/Lane
-static kal_uint16 s5khpxsemco_custom2_setting[] = {
+static kal_uint16 s5khpxofilm_custom2_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -16853,10 +16853,10 @@ static kal_uint16 s5khpxsemco_custom2_setting[] = {
 0xF32A,	0x0020,
 0xF320,	0x0020,
 0xF32C,	0x0020,
-};//s5khpxsemco_custom2_setting
+};//s5khpxofilm_custom2_setting
 
 // 4080 x 2296@60fps 1350Msps/Lane
-static kal_uint16 s5khpxsemco_custom3_setting[] = {
+static kal_uint16 s5khpxofilm_custom3_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -18024,10 +18024,10 @@ static kal_uint16 s5khpxsemco_custom3_setting[] = {
 0xF32A,	0x001C,
 0xF320,	0x001C,
 0xF32C,	0x001C,
-};//s5khpxsemco_custom3_setting
+};//s5khpxofilm_custom3_setting
 
 // 8160 x 6120@24fps 1350Msps/Lane
-static kal_uint16 s5khpxsemco_custom4_setting[] = {
+static kal_uint16 s5khpxofilm_custom4_setting[] = {
 0xFCFC,	0x4000,
 0x6214,	0xFFFF,
 0x6216,	0xFFFF,
@@ -19195,7 +19195,7 @@ static kal_uint16 s5khpxsemco_custom4_setting[] = {
 0xF32A,	0x0010,
 0xF320,	0x0010,
 0xF32C,	0x0010,
-};//s5khpxsemco_custom4_setting
+};//s5khpxofilm_custom4_setting
 typedef enum{
 	IMGSENSOR_MODE_INIT,
 	IMGSENSOR_MODE_PREVIEW,
@@ -19331,6 +19331,6 @@ extern int iBurstWriteReg_multi(u8 *pData, u32 bytes, u16 i2cId,
 
 static kal_uint16 read_cmos_sensor(kal_uint32 addr);
 static void write_cmos_sensor(kal_uint32 addr, kal_uint32 para);
- #define PFX "S5KHPXSEMCO"
+ #define PFX "S5KHPXOFILM"
  #define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #endif
