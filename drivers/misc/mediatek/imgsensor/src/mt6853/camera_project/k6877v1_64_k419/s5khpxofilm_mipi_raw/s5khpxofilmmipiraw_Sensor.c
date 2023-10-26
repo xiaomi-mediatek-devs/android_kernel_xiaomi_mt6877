@@ -340,6 +340,8 @@ static kal_uint32 return_sensor_id(void)
 
 	if (VENDOR_ID != imgsensor.vendor_id)
 		sensor_id = 0xFFFF;
+	else if (sensor_id == S5KHPXSEMCO_SENSOR_ID)
+		sensor_id = S5KHPXOFILM_SENSOR_ID;
 
 	S5KHPXOFILM_LOG_INF("[%s] sensor_id: 0x%x,sensor_version:0x%x,vendor_id:0x%x\n", __func__, sensor_id, sensor_version, imgsensor.vendor_id);
 
