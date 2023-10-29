@@ -1237,7 +1237,7 @@ int32_t btmtk_wcn_btif_open(void)
  * Return Value:
  *     0 if success, otherwise error code
  */
-int32_t btmtk_wcn_btif_close()
+int32_t btmtk_wcn_btif_close(void)
 {
 	int32_t ret = 0;
 	struct btmtk_btif_dev *cif_dev = (struct btmtk_btif_dev *)g_sbdev->cif_dev;

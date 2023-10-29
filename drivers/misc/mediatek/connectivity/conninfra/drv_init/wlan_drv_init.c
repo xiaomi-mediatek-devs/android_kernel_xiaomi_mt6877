@@ -7,13 +7,13 @@
 
 #include "wlan_drv_init.h"
 
-int __attribute__((weak)) mtk_wcn_wlan_gen4_init()
+int __attribute__((weak)) mtk_wcn_wlan_gen4_init(void)
 {
 	pr_info("no impl. mtk_wcn_wlan_gen4_init\n");
 	return 0;
 }
 
-int __attribute__((weak)) mtk_wcn_wmt_wifi_init()
+int __attribute__((weak)) mtk_wcn_wmt_wifi_init(void)
 {
 	pr_info("no impl. mtk_wcn_wmt_wifi_init");
 	return 0;
