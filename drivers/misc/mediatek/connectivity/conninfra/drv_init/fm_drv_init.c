@@ -8,7 +8,7 @@
 #include "fm_drv_init.h"
 
 #ifdef CONFIG_MTK_FMRADIO
-int __attribute__((weak)) mtk_wcn_fm_init()
+int __attribute__((weak)) mtk_wcn_fm_init(void)
 {
 	pr_err("no impl. mtk_wcn_fm_init\n");
 	return 0;
