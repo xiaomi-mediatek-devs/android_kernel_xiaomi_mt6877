@@ -84,7 +84,7 @@ enum max77932_ovp {
 	MAX77932_OVP_11_0V,
 };
 
-product_name = UNKNOW;
+enum product_name product_name = UNKNOW;
 static int log_level = 2;
 
 #define max_err(fmt, ...)							\
