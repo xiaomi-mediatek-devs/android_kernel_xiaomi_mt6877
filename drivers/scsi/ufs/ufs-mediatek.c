@@ -2020,12 +2020,35 @@ EXPORT_SYMBOL_GPL(ufs_mtk_get_hba);
  */
 static int ufs_mtk_remove(struct platform_device *pdev)
 {
-	struct ufs_hba *hba =  platform_get_drvdata(pdev);
+	struct ufs_hba *hba = platform_get_drvdata(pdev);
 
 	pm_runtime_get_sync(&(pdev)->dev);
 	ufshcd_remove(hba);
 	ufs_mtk_biolog_exit();
 	return 0;
+}
+
+void ufshcd_mtk_shutdown(struct platform_device *pdev)
+{
+	struct ufs_hba *hba = platform_get_drvdata(pdev);
+	struct scsi_device *sdev;
+
+	/*
+	 * Quiesce all SCSI devices to prevent any non-PM requests sending
+	 * from block layer during and after shutdown.
+	 *
+	 * Note. Using scsi_autopm_get_device() instead of pm_runtime_disable()
+	 * is to prevent noisy message by below checking,
+	 * WARN_ON_ONCE(sdev->quiesced_by && sdev->quiesced_by != current);
+	 * This warning shows up if we try to quiesce a runtime-suspended
+	 * SCSI device. This is possible during our new shutdown flow.
+	 * Using scsi_autopm_get_device() to resume all SCSI devices first
+	 * can prevent it.
+	 */
+	shost_for_each_device(sdev, hba->host)
+		scsi_device_quiesce(sdev);
+
+	ufshcd_shutdown(hba);
 }
 
 static const struct dev_pm_ops ufs_mtk_pm_ops = {
@@ -2039,7 +2062,7 @@ static const struct dev_pm_ops ufs_mtk_pm_ops = {
 static struct platform_driver ufs_mtk_pltform = {
 	.probe      = ufs_mtk_probe,
 	.remove     = ufs_mtk_remove,
-	.shutdown   = ufshcd_pltfrm_shutdown,
+	.shutdown   = ufshcd_mtk_shutdown,
 	.driver = {
 		.name   = "ufshcd-mtk",
 		.pm     = &ufs_mtk_pm_ops,
