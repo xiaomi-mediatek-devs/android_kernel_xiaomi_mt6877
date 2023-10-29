@@ -111,8 +111,8 @@ extern int get_panel_dead_flag(void);
 
 static struct drm_panel * this_panel = NULL;
 static struct mtk_ddic_dsi_msg *cmd_msg = NULL;
-static last_bl_level = 0;
-static last_non_zero_bl_level = 511;
+static int last_bl_level = 0;
+static int last_non_zero_bl_level = 511;
 
 struct lcm {
 	struct device *dev;
