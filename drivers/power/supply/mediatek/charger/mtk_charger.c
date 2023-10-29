@@ -2765,7 +2765,7 @@ void smart_batt_set_diff_fv(int val)
 }
 EXPORT_SYMBOL(smart_batt_set_diff_fv);
 
-int smart_batt_get_diff_fv()
+int smart_batt_get_diff_fv(void)
 {
 	if (pinfo == NULL)
 		return 0;
@@ -2783,7 +2783,7 @@ void night_charging_set_status(int val)
 }
 EXPORT_SYMBOL(night_charging_set_status);
 
-int night_charging_get_status()
+int night_charging_get_status(void)
 {
 	if (pinfo == NULL)
 		return 0;
@@ -2801,7 +2801,7 @@ void set_soft_reset_status(int val)
 }
 EXPORT_SYMBOL(set_soft_reset_status);
 
-int get_soft_reset_status()
+int get_soft_reset_status(void)
 {
 	if (pinfo == NULL)
 		return 0;
