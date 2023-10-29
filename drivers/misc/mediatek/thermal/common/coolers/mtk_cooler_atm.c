@@ -3851,7 +3851,7 @@ static int krtatm_thread(void *arg)
 }
 #endif	/* FAST_RESPONSE_ATM */
 
-static void init_ctm_param()
+static void init_ctm_param(void)
 {
 	int t_K_SUM_TT_HIGH = CLCTM_TT_HIGH;
 	int t_K_SUM_TT_LOW = CLCTM_TT_LOW;
