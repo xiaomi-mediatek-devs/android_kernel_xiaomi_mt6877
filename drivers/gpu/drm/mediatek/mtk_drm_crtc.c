@@ -4679,11 +4679,9 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 #endif
 
 	/* 3. power on cmdq client */
-	if (crtc_id == 2) {
-		client = mtk_crtc->gce_obj.client[CLIENT_CFG];
-		cmdq_mbox_enable(client->chan);
-		CRTC_MMP_MARK(crtc_id, enable, 1, 1);
-	}
+	client = mtk_crtc->gce_obj.client[CLIENT_CFG];
+	cmdq_mbox_enable(client->chan);
+	CRTC_MMP_MARK(crtc_id, enable, 1, 1);
 
 	/* 4. start trigger loop first to keep gce alive */
 	if (mtk_crtc_with_trigger_loop(crtc)) {
@@ -5045,6 +5043,9 @@ void mtk_crtc_first_enable_ddp_config(struct mtk_drm_crtc *mtk_crtc)
 	}
 	cfg.p_golden_setting_context =
 			__get_golden_setting_context(mtk_crtc);
+
+	cmdq_mbox_enable(mtk_crtc->gce_obj.client[CLIENT_CFG]->chan);
+
 	mtk_crtc_pkt_create(&cmdq_handle, &mtk_crtc->base,
 		mtk_crtc->gce_obj.client[CLIENT_CFG]);
 	cmdq_pkt_clear_event(cmdq_handle,
@@ -5211,11 +5212,9 @@ void mtk_drm_crtc_disable(struct drm_crtc *crtc, bool need_wait)
 	drm_crtc_vblank_off(crtc);
 
 	/* 8. power off cmdq client */
-	if (crtc_id == 2) {
-		client = mtk_crtc->gce_obj.client[CLIENT_CFG];
-		cmdq_mbox_disable(client->chan);
-		CRTC_MMP_MARK(crtc_id, disable, 1, 2);
-	}
+	client = mtk_crtc->gce_obj.client[CLIENT_CFG];
+	cmdq_mbox_disable(client->chan);
+	CRTC_MMP_MARK(crtc_id, disable, 1, 2);
 
 	/* If open dynamic OVL 4+2, need switch ovl back to main disp */
 	if (!private) {
