@@ -3,6 +3,10 @@ ifeq ($(strip $(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE)), y)
 dtb-y += $(addsuffix .dtb, $(notdir $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))))
 endif
 
-always          := $(dtb-y)
+ifeq ($(strip $(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE)), y)
+dtbo-y += $(addsuffix .dtbo, $(notdir $(subst $\",,$(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES))))
+endif
+
+always          := $(dtb-y) $(dtbo-y)
 subdir-y        := $(dts-dirs)
-clean-files     := *.dtb
+clean-files     := *.dtb *.dtbo

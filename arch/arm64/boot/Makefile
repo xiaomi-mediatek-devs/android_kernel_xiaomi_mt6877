@@ -18,15 +18,28 @@ OBJCOPYFLAGS_Image :=-O binary -R .note -R .note.gnu.build-id -R .comment -S
 
 targets := Image Image.bz2 Image.gz Image.lz4 Image.lzma Image.lzo
 
+ifeq ($(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE),y)
+targets += dtbo.img
+endif
+
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)
 DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
 else
 DTB_LIST := $(dtb-y)
 endif
-DTB_OBJS := $(addprefix $(obj)/dts/,$(DTB_LIST))
 
-targets += $(DTB_LIST)
+DTBO_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES))
+ifneq ($(DTBO_NAMES),)
+DTBO_LIST += $(addsuffix .dtbo,$(DTBO_NAMES))
+else
+DTBO_LIST := $(dtbo-y)
+endif
+
+DTB_OBJS := $(addprefix $(obj)/dts/,$(DTB_LIST))
+DTBO_OBJS := $(addprefix $(obj)/dts/,$(DTBO_LIST))
+
+targets += $(DTB_LIST) $(DTBO_LIST)
 
 $(obj)/Image: vmlinux FORCE
 	$(call if_changed,objcopy)
@@ -51,6 +64,9 @@ $(obj)/Image.lzo: $(obj)/Image FORCE
 
 $(obj)/Image.gz-dtb: $(obj)/Image.gz $(DTB_OBJS) FORCE
 	$(call if_changed,cat)
+
+$(obj)/dtbo.img: $(DTBO_OBJS) FORCE
+	$(call if_changed,mkdtimg)
 
 install:
 	$(CONFIG_SHELL) $(srctree)/$(src)/install.sh $(KERNELRELEASE) \
