@@ -53,6 +53,7 @@ config NONLINEAR_FREQ_CTL
 	bool "Non-linear frequency control"
 	depends on MTK_CPU_FREQ
 	depends on MTK_UNIFY_POWER
+	depends on !SCHED_WALT
 	help
 	  Choose this option to enable non-linear frequency control.
 	  This will change per-opp capacity from linear scaled by
