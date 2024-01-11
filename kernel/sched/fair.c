@@ -7471,11 +7471,37 @@ cpu_util_next_walt(int cpu, struct task_struct *p, int dst_cpu)
 	util <<= SCHED_CAPACITY_SHIFT;
 	do_div(util, walt_ravg_window);
 
-	if (unlikely(queued && task_cpu(p) == cpu && dst_cpu != cpu))
-		util = max_t(long, util - task_util(p), 0);
-	else if (task_cpu(p) != cpu && dst_cpu == cpu &&
-						p->state == TASK_WAKING)
+	/*
+	 * When task is queued,
+	 * (a) The evaluating CPU (cpu) is task's current CPU. If the
+	 * task is migrating, discount the task contribution from the
+	 * evaluation cpu.
+	 * (b) The evaluating CPU (cpu) is task's current CPU. If the
+	 * task is NOT migrating, nothing to do. The contribution is
+	 * already present on the evaluation CPU.
+	 * (c) The evaluating CPU (cpu) is not task's current CPU. But
+	 * the task is migrating to the evaluating CPU. So add the
+	 * task contribution to it.
+	 * (d) The evaluating CPU (cpu) is neither the current CPU nor
+	 * the destination CPU. don't care.
+	 *
+	 * When task is NOT queued i.e waking. Task contribution is not
+	 * present on any CPU.
+	 *
+	 * (a) If the evaluating CPU is the destination CPU, add the task
+	 * contribution.
+	 * (b) The evaluation CPU is not the destination CPU, don't care.
+	 */
+	if (unlikely(queued)) {
+		if (task_cpu(p) == cpu) {
+			if (dst_cpu != cpu)
+				util = max_t(long, util - task_util(p), 0);
+		} else if (dst_cpu == cpu) {
+			util += task_util(p);
+		}
+	} else if (dst_cpu == cpu) {
 		util += task_util(p);
+	}
 
 	return min_t(unsigned long, util, capacity_orig_of(cpu));
 }
