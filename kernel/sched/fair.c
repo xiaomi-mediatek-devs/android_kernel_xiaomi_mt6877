@@ -7461,6 +7461,26 @@ static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
 	return min(util, capacity_orig_of(cpu));
 }
 
+#ifdef CONFIG_SCHED_WALT
+static inline unsigned long
+cpu_util_next_walt(int cpu, struct task_struct *p, int dst_cpu)
+{
+	u64 util = cpu_rq(cpu)->cumulative_runnable_avg;
+	bool queued = task_on_rq_queued(p);
+
+	util <<= SCHED_CAPACITY_SHIFT;
+	do_div(util, walt_ravg_window);
+
+	if (unlikely(queued && task_cpu(p) == cpu && dst_cpu != cpu))
+		util = max_t(long, util - task_util(p), 0);
+	else if (task_cpu(p) != cpu && dst_cpu == cpu &&
+						p->state == TASK_WAKING)
+		util += task_util(p);
+
+	return min_t(unsigned long, util, capacity_orig_of(cpu));
+}
+#endif
+
 /*
  * compute_energy(): Estimates the energy that would be consumed if @p was
  * migrated to @dst_cpu. compute_energy() predicts what will be the utilization
@@ -7476,6 +7496,9 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 	unsigned long sum_util, energy = 0;
 	struct task_struct *tsk;
 	int cpu;
+#ifdef CONFIG_SCHED_WALT
+	bool use_walt = (!walt_disabled && sysctl_sched_use_walt_task_util);
+#endif
 
 	for (; pd; pd = pd->next) {
 		struct cpumask *pd_mask = perf_domain_span(pd);
@@ -7498,27 +7521,36 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 		 * by compute_energy().
 		 */
 		for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
-			util_cfs = mtk_cpu_util_next(cpu, p, dst_cpu, &util_cfs_energy);
+#ifdef CONFIG_SCHED_WALT
+			if (likely(use_walt)) {
+				cpu_util = cpu_util_next_walt(cpu, p, dst_cpu);
+				sum_util += cpu_util;
+			} else {
+#endif
+				util_cfs = mtk_cpu_util_next(cpu, p, dst_cpu, &util_cfs_energy);
 
-			/*
-			 * Busy time computation: utilization clamping is not
-			 * required since the ratio (sum_util / cpu_capacity)
-			 * is already enough to scale the EM reported power
-			 * consumption at the (eventually clamped) cpu_capacity.
-			 */
-			sum_util += schedutil_cpu_util(cpu, util_cfs_energy, cpu_cap,
-						       ENERGY_UTIL, NULL);
+				/*
+				 * Busy time computation: utilization clamping is not
+				 * required since the ratio (sum_util / cpu_capacity)
+				 * is already enough to scale the EM reported power
+				 * consumption at the (eventually clamped) cpu_capacity.
+				 */
+				sum_util += schedutil_cpu_util(cpu, util_cfs_energy, cpu_cap,
+							       ENERGY_UTIL, NULL);
 
-			/*
-			 * Performance domain frequency: utilization clamping
-			 * must be considered since it affects the selection
-			 * of the performance domain frequency.
-			 * NOTE: in case RT tasks are running, by default the
-			 * FREQUENCY_UTIL's utilization can be max OPP.
-			 */
-			tsk = cpu == dst_cpu ? p : NULL;
-			cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
-						      FREQUENCY_UTIL, tsk);
+				/*
+				 * Performance domain frequency: utilization clamping
+				 * must be considered since it affects the selection
+				 * of the performance domain frequency.
+				 * NOTE: in case RT tasks are running, by default the
+				 * FREQUENCY_UTIL's utilization can be max OPP.
+				 */
+				tsk = cpu == dst_cpu ? p : NULL;
+				cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
+							      FREQUENCY_UTIL, tsk);
+#ifdef CONFIG_SCHED_WALT
+			}
+#endif
 			max_util = max(max_util, cpu_util);
 
 #ifdef CONFIG_MTK_SCHED_EXTENSION
