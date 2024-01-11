@@ -2,6 +2,7 @@ menu "MTK scheduler extension"
 
 config MTK_SCHED_EXTENSION
 	bool "mtk scheduler extension"
+	depends on !SCHED_WALT
 	help
 	  MTK scheduler extension,
 	  1. include MTK scheduler enhancement.
