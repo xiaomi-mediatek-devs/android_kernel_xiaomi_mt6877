@@ -358,16 +358,31 @@ unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
 static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 {
 	struct rq *rq = cpu_rq(sg_cpu->cpu);
-#ifdef CONFIG_SCHED_TUNE
-	unsigned long util = stune_util(sg_cpu->cpu, cpu_util_rt(rq));
-#else
-	unsigned long util = cpu_util_freq(sg_cpu->cpu);
-#endif
-	unsigned long util_cfs = util - cpu_util_rt(rq);
 	unsigned long max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+	unsigned long util, util_cfs;
+	long margin;
 
 	sg_cpu->max = max;
 	sg_cpu->bw_dl = cpu_bw_dl(rq);
+
+#ifdef CONFIG_SCHED_WALT
+	if (likely(!walt_disabled && sysctl_sched_use_walt_cpu_util)) {
+#ifdef CONFIG_SCHED_TUNE
+		util = cpu_util_freq(sg_cpu->cpu);
+		margin = schedtune_cpu_margin(util, sg_cpu->cpu);
+		return util + margin;
+#else
+		return cpu_util_freq(sg_cpu->cpu);
+#endif
+	}
+#endif
+
+#ifdef CONFIG_SCHED_TUNE
+	util = stune_util(sg_cpu->cpu, cpu_util_rt(rq));
+#else
+	util = cpu_util_freq(sg_cpu->cpu);
+#endif
+	util_cfs = util - cpu_util_rt(rq);
 
 #ifndef CONFIG_SCHED_WALT
 	spin_lock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
