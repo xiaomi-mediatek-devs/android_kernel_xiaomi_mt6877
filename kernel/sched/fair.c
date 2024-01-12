@@ -3740,7 +3740,7 @@ static int idle_balance(struct rq *this_rq, struct rq_flags *rf);
 static inline unsigned long task_util(struct task_struct *p)
 {
 #ifdef CONFIG_SCHED_WALT
-	if (!walt_disabled && sysctl_sched_use_walt_task_util) {
+	if (likely(!walt_disabled && sysctl_sched_use_walt_task_util)) {
 		return (p->ravg.demand / (walt_ravg_window >> SCHED_CAPACITY_SHIFT));
 	}
 #endif
@@ -3757,7 +3757,7 @@ static inline unsigned long _task_util_est(struct task_struct *p)
 unsigned long task_util_est(struct task_struct *p)
 {
 #ifdef CONFIG_SCHED_WALT
-	if (!walt_disabled && sysctl_sched_use_walt_task_util) {
+	if (likely(!walt_disabled && sysctl_sched_use_walt_task_util)) {
 		return (p->ravg.demand / (walt_ravg_window >> SCHED_CAPACITY_SHIFT));
 	}
 #endif
