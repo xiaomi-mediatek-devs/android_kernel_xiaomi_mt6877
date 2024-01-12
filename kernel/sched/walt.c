@@ -769,9 +769,12 @@ void walt_update_task_ravg(struct task_struct *p, struct rq *rq,
 	update_task_demand(p, rq, event, wallclock);
 	update_cpu_busy_time(p, rq, event, wallclock, irqtime);
 
-done:
+	if (exiting_task(p))
+		goto done;
+
 	trace_walt_update_task_ravg(p, rq, event, wallclock, irqtime);
 
+done:
 	p->ravg.mark_start = wallclock;
 }
 
