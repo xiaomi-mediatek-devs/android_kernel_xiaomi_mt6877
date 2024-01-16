@@ -575,9 +575,11 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 		return;
 	}
 
+#ifdef CONFIG_SCHED_WALT
 	/* Limits may have changed, don't skip frequency update */
 	if (unlikely(walt_disabled && !sysctl_sched_use_walt_cpu_util))
 		busy = !sg_policy->need_freq_update && sugov_cpu_is_busy(sg_cpu);
+#endif
 
 	util = sugov_get_util(sg_cpu);
 	max = sg_cpu->max;

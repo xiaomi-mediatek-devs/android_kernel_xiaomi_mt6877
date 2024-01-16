@@ -6918,9 +6918,9 @@ static unsigned long cpu_util_without(int cpu, struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq;
 	unsigned int util;
+#ifdef CONFIG_SCHED_WALT
 	bool use_walt = !walt_disabled && sysctl_sched_use_walt_cpu_util;
 
-#ifdef CONFIG_SCHED_WALT
 	/*
 	 * WALT does not decay idle tasks in the same manner
 	 * as PELT, so it makes little sense to subtract task
