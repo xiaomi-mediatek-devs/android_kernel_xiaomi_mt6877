@@ -2666,7 +2666,7 @@ static inline unsigned long cpu_util_freq(int cpu)
 #ifdef CONFIG_SCHED_WALT
 	u64 walt_cpu_util;
 
-	if (likely(!walt_disabled && sysctl_sched_use_walt_cpu_util)) {
+	if (unlikely(walt_disabled && !sysctl_sched_use_walt_cpu_util)) {
 		return min(cpu_util_cfs(rq) + cpu_util_rt(rq), capacity_orig_of(cpu));
 	}
 
