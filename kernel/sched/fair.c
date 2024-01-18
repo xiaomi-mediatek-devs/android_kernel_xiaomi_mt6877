@@ -6174,8 +6174,14 @@ long schedtune_task_margin(struct task_struct *task)
 unsigned long
 stune_util(int cpu, unsigned long other_util)
 {
+#ifdef CONFIG_SCHED_WALT
+	unsigned long util = min_t(unsigned long, SCHED_CAPACITY_SCALE,
+				   cpu_util_freq(cpu) + other_util);
+#else
 	unsigned long util = min_t(unsigned long, SCHED_CAPACITY_SCALE,
 				   cpu_util_cfs(cpu_rq(cpu)) + other_util);
+#endif
+
 	long margin = schedtune_cpu_margin(util, cpu);
 
 	trace_sched_boost_cpu(cpu, util, margin);

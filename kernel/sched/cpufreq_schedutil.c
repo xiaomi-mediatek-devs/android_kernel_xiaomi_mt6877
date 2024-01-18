@@ -368,9 +368,7 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 #ifdef CONFIG_SCHED_WALT
 	if (likely(!walt_disabled && sysctl_sched_use_walt_cpu_util)) {
 #ifdef CONFIG_SCHED_TUNE
-		util = cpu_util_freq(sg_cpu->cpu);
-		margin = schedtune_cpu_margin(util, sg_cpu->cpu);
-		return util + margin;
+		return stune_util(sg_cpu->cpu, 0);
 #else
 		return cpu_util_freq(sg_cpu->cpu);
 #endif
