@@ -358,17 +358,31 @@ unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
 static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 {
 	struct rq *rq = cpu_rq(sg_cpu->cpu);
-#ifdef CONFIG_SCHED_TUNE
-	unsigned long util = stune_util(sg_cpu->cpu, cpu_util_rt(rq));
-#else
-	unsigned long util = cpu_util_freq(sg_cpu->cpu);
-#endif
-	unsigned long util_cfs = util - cpu_util_rt(rq);
 	unsigned long max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+	unsigned long util, util_cfs;
+	long margin;
 
 	sg_cpu->max = max;
 	sg_cpu->bw_dl = cpu_bw_dl(rq);
 
+#ifdef CONFIG_SCHED_WALT
+	if (likely(!walt_disabled && sysctl_sched_use_walt_cpu_util)) {
+#ifdef CONFIG_SCHED_TUNE
+		return stune_util(sg_cpu->cpu, 0);
+#else
+		return cpu_util_freq(sg_cpu->cpu);
+#endif
+	}
+#endif
+
+#ifdef CONFIG_SCHED_TUNE
+	util = stune_util(sg_cpu->cpu, cpu_util_rt(rq));
+#else
+	util = cpu_util_freq(sg_cpu->cpu);
+#endif
+	util_cfs = util - cpu_util_rt(rq);
+
+#ifndef CONFIG_SCHED_WALT
 	spin_lock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
 	if (per_cpu(cpufreq_idle_cpu, sg_cpu->cpu)) {
 		spin_unlock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
@@ -376,6 +390,7 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 	}
 
 	spin_unlock(&per_cpu(cpufreq_idle_cpu_lock, sg_cpu->cpu));
+#endif
 
 	return schedutil_cpu_util(sg_cpu->cpu, util_cfs, max,
 				  FREQUENCY_UTIL, NULL);
@@ -544,7 +559,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 	int cid = arch_cpu_cluster_id(policy->cpu);
 	unsigned long util, max;
 	unsigned int next_f;
-	bool busy;
+	bool busy = false;
 
 	raw_spin_lock(&sg_policy->update_lock);
 
@@ -558,8 +573,11 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 		return;
 	}
 
+#ifdef CONFIG_SCHED_WALT
 	/* Limits may have changed, don't skip frequency update */
-	busy = !sg_policy->need_freq_update && sugov_cpu_is_busy(sg_cpu);
+	if (unlikely(walt_disabled && !sysctl_sched_use_walt_cpu_util))
+		busy = !sg_policy->need_freq_update && sugov_cpu_is_busy(sg_cpu);
+#endif
 
 	util = sugov_get_util(sg_cpu);
 	max = sg_cpu->max;
@@ -667,6 +685,9 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
 		if (sugov_update_next_freq(sg_policy, time, next_f)) {
 			next_f = mt_cpufreq_find_close_freq(cid, next_f);
 			mt_cpufreq_set_by_wfi_load_cluster(cid, next_f);
+#ifdef CONFIG_SCHED_WALT
+			__cpufreq_notifier_fp(cid, next_f);
+#endif
 			trace_sched_util(cid, next_f, time);
 		}
 #else
@@ -674,10 +695,15 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
 			sugov_fast_switch(sg_policy, time, next_f);
 		else
 			sugov_deferred_update(sg_policy, time, next_f);
+#ifdef CONFIG_SCHED_WALT
+		__cpufreq_notifier_fp(cid, next_f);
+#endif
 #endif
 	}
 
+#ifndef CONFIG_SCHED_WALT
 	__cpufreq_notifier_fp(cid, next_f);
+#endif
 
 	raw_spin_unlock(&sg_policy->update_lock);
 }
