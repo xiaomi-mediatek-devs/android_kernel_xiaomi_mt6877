@@ -59,7 +59,7 @@ config MTK_SCHED_CPU_PREFER
 
 config MTK_SCHED_BIG_TASK_MIGRATE
 	bool "mtk scheduling big task migrate"
-	depends on MTK_SCHED_EXTENSION && SMP
+	depends on MTK_SCHED_EXTENSION && MTK_EAS_CTRL && SMP
 	help
 	   Migrate misfit task more efficient in scheduler tick.
 	   1. Big task migration: migrate misfit task in scheduler tick
