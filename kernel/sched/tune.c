@@ -204,14 +204,12 @@ static void
 schedtune_cpu_update(int cpu, u64 now)
 {
 	struct boost_groups *bg = &per_cpu(cpu_boost_groups, cpu);
-	int boost_max;
+	int boost_max = INT_MIN;
 	u64 boost_ts;
 	int idx;
 
-	/* The root boost group is always active */
-	boost_max = bg->group[0].boost;
 	boost_ts = now;
-	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx) {
+	for (idx = 0; idx < BOOSTGROUPS_COUNT; ++idx) {
 
 		/* Ignore non boostgroups not mapping a cgroup */
 		if (!bg->group[idx].valid)
@@ -233,10 +231,9 @@ schedtune_cpu_update(int cpu, u64 now)
 		boost_ts =  bg->group[idx].ts;
 	}
 
-	/* Ensures boost_max is non-negative when all cgroup boost values
-	 * are neagtive. Avoids under-accounting of cpu capacity which may cause
-	 * task stacking and frequency spikes.*/
-	boost_max = max(boost_max, 0);
+	/* If there are no active boost groups on the CPU, set no boost  */
+	if (boost_max == INT_MIN)
+		boost_max = 0;
 	bg->boost_max = boost_max;
 	bg->boost_ts = boost_ts;
 }
