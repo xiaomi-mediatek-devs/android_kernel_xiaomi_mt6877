@@ -100,11 +100,7 @@ SCHED_FEAT(UCLAMP_LAZY_UPDATE, false)
 /*
  * Fast pre-selection of CPU candidates for EAS.
  */
-#ifdef CONFIG_SCHED_WALT
-SCHED_FEAT(FIND_BEST_TARGET, true)
-#else
 SCHED_FEAT(FIND_BEST_TARGET, false)
-#endif
 
 /*
  * Energy aware scheduling algorithm choices:
