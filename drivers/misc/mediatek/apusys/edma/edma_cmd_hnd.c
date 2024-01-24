@@ -70,7 +70,7 @@ int edma_ext_by_sub(struct edma_sub *edma_sub, struct edma_request *req)
 
 	ret = wait_command(edma_sub, CMD_WAIT_TIME_MS);
 	if (ret) {
-		pr_notice
+		pr_debug
 		    ("%s:timeout\n", __func__);
 		if (drv)
 			drv->prt_error(edma_sub, req);
@@ -151,7 +151,7 @@ void edma_start_power_off(struct work_struct *work)
 	if (ret != 0) {
 		LOG_ERR("%s power off fail\n", __func__);
 	} else {
-		pr_notice("%s: power off done!!\n", __func__);
+		pr_debug("%s: power off done!!\n", __func__);
 		edmaDev->power_state = EDMA_POWER_OFF;
 	}
 	mutex_unlock(&edmaDev->power_mutex);
@@ -165,7 +165,7 @@ void edma_power_time_up(struct timer_list *tlist)
 	struct edma_device *edma_device =
 	    container_of(tlist, struct edma_device, power_timer);
 
-	pr_notice("%s: !!\n", __func__);
+	pr_debug("%s: !!\n", __func__);
 	//use kwork job to prevent power off at irq
 	schedule_work(&edma_device->power_off_work);
 }
@@ -179,7 +179,7 @@ int edma_power_off(struct edma_sub *edma_sub, u8 force)
 	if (edma_device->dbg_cfg
 		& EDMA_DBG_DISABLE_PWR_OFF) {
 
-		pr_notice("%s:no power off!!\n", __func__);
+		pr_debug("%s:no power off!!\n", __func__);
 
 		return 0;
 	}
@@ -195,7 +195,7 @@ int edma_power_off(struct edma_sub *edma_sub, u8 force)
 
 			if (edma_device->power_state != EDMA_POWER_OFF) {
 				ret = apu_device_power_suspend(EDMA, 1);
-				pr_notice("%s: force power off!!\n", __func__);
+				pr_debug("%s: force power off!!\n", __func__);
 				if (!ret) {
 					LOG_INF("%s power off success\n",
 							__func__);
@@ -253,7 +253,7 @@ int edma_execute(struct edma_sub *edma_sub, struct edma_ext *edma_ext)
 	t2 = ktime_get_ns();
 	exe_time = (t2 - t1)/1000;
 
-	//pr_notice("%s:ip time = %d\n", __func__, edma_sub->ip_time);
+	//pr_debug("%s:ip time = %d\n", __func__, edma_sub->ip_time);
 	LOG_DBG("%s:func done[%d], exe_time = %d, ip time = %d\n",
 		__func__, ret, exe_time, edma_sub->ip_time);
 #endif

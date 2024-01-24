@@ -30,7 +30,6 @@ endif
 
 obj-y += $(subst ",,$(platform))/
 
-$(warning CCU_MAKE_FILE_CALLED)
 ifneq (,$(filter $(platform),mt6757 mt6799))
     obj-y += 1.0/
 else ifneq (,$(filter $(platform),mt6758 mt6763))
@@ -41,5 +40,4 @@ else ifneq (,$(filter $(platform),mt6771 mt6775 mt6785))
     obj-y += 2.0/
 else ifneq (,$(filter $(platform),mt6779))
     obj-y += 2.1/
-    $(warning CCU_MAKE_FILE_CALLED_2_1)
 endif

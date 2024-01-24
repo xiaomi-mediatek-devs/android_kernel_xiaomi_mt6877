@@ -55,7 +55,7 @@ static struct adsp_reserve_mblock *adsp_get_reserve_mblock(
 					enum adsp_reserve_mem_id_t id)
 {
 	if (id >= ADSP_NUMS_MEM_ID) {
-		pr_info("[ADSP] no reserve memory for %d", id);
+		pr_err("[ADSP] no reserve memory for %d", id);
 		return NULL;
 	}
 
@@ -67,7 +67,7 @@ int adsp_set_reserve_mblock(
 		void *virt_addr, size_t size)
 {
 	if (id >= ADSP_NUMS_MEM_ID || id < 0) {
-		pr_info("[ADSP] no reserve memory for %d", id);
+		pr_err("[ADSP] no reserve memory for %d", id);
 		return -1;
 	}
 
@@ -106,7 +106,7 @@ void *adsp_reserve_memory_ioremap(phys_addr_t phys_addr, size_t size)
 	size_t acc_size = 0;
 
 	if (!phys_addr || !size) {
-		pr_info("[ADSP] set reserve memory illegal addr:%llu, size:%zu",
+		pr_err("[ADSP] set reserve memory illegal addr:%llu, size:%zu",
 			phys_addr, size);
 		return NULL;
 	}

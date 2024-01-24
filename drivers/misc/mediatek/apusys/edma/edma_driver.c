@@ -59,7 +59,7 @@ int edma_initialize(struct edma_device *edma_device)
 		init_waitqueue_head(&edma_sub->cmd_wait);
 		if (snprintf(edma_sub->sub_name, sizeof(edma_sub->sub_name),
 			"edma%d", edma_sub->sub) < 0)
-			pr_notice("edma_sub->sub_name cop fail!\n");
+			pr_debug("edma_sub->sub_name cop fail!\n");
 	}
 
 	return ret;
@@ -79,7 +79,7 @@ static inline int edma_reg_chardev(struct edma_device *edma_device)
 
 	ret = alloc_chrdev_region(&edma_device->edma_devt, 0, 1, EDMA_DEV_NAME);
 	if ((ret) < 0) {
-		pr_notice("alloc_chrdev_region failed, %d\n", ret);
+		pr_debug("alloc_chrdev_region failed, %d\n", ret);
 		return ret;
 	}
 
@@ -90,7 +90,7 @@ static inline int edma_reg_chardev(struct edma_device *edma_device)
 	/* Add to system */
 	ret = cdev_add(&edma_device->edma_chardev, edma_device->edma_devt, 1);
 	if ((ret) < 0) {
-		pr_notice("Attatch file operation failed, %d\n", ret);
+		pr_debug("Attatch file operation failed, %d\n", ret);
 		goto out;
 	}
 
@@ -330,7 +330,7 @@ static int edma_probe(struct platform_device *pdev)
 	}
 #endif
 	edma_initialize(edma_device);
-	pr_notice("edma probe done\n");
+	pr_debug("edma probe done\n");
 
 	return 0;
 
@@ -383,10 +383,10 @@ static int __init edma_init(void)
 {
 	int ret = 0;
 
-	pr_info("%s in\n", __func__);
+	pr_debug("%s in\n", __func__);
 
 	if (!apusys_power_check()) {
-		pr_info("%s: edma is disabled by apusys\n", __func__);
+		pr_debug("%s: edma is disabled by apusys\n", __func__);
 		return -ENODEV;
 	}
 
@@ -394,13 +394,13 @@ static int __init edma_init(void)
 
 	ret = platform_driver_register(&mtk_edma_sub_driver);
 	if (ret != 0) {
-		pr_notice("Failed to register edma sub driver\n");
+		pr_debug("Failed to register edma sub driver\n");
 		return -ENODEV;
 	}
 
 	ret = platform_driver_register(&edma_driver);
 	if (ret != 0) {
-		pr_notice("failed to register edma driver");
+		pr_debug("failed to register edma driver");
 		goto err_unreg_edma_sub;
 	}
 

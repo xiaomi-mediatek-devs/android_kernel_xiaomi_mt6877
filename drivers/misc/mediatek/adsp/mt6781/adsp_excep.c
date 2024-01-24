@@ -184,14 +184,14 @@ static void adsp_exception_dump(struct adsp_exception_control *ctrl)
 
 	if (suppress_test_ee && coredump
 	    && strstr(coredump->assert_log, ADSP_TEST_EE_PATTERN)) {
-		pr_info("%s, suppress Test EE dump", __func__);
+		pr_debug("%s, suppress Test EE dump", __func__);
 		return;
 	}
 
 	if (dump_flag) {
 		ret = dump_buffer(ctrl, coredump_id);
 		if (ret < 0)
-			pr_info("%s, excep dump fail ret(%d)", __func__, ret);
+			pr_debug("%s, excep dump fail ret(%d)", __func__, ret);
 	}
 
 	n += snprintf(detail + n, ADSP_AED_STR_LEN - n, "%s %s\n",
@@ -208,7 +208,7 @@ static void adsp_exception_dump(struct adsp_exception_control *ctrl)
 		n += snprintf(detail + n, ADSP_AED_STR_LEN - n, "%s",
 			      coredump->assert_log);
 	}
-	pr_info("%s", detail);
+	pr_err("%s", detail);
 
 	/* adsp aed api, only detail information available*/
 	aed_common_exception_api("adsp", (const int *)coredump, coredump_size,

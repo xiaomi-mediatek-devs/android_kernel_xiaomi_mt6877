@@ -1,5 +1,3 @@
-$(info mali MTK evironment, building r32p1 DDK)
-
 MTK_TOP = $(srctree)/drivers/misc/mediatek/
 
 # build support for a ARM Mali Midgard GPU
@@ -18,9 +16,6 @@ CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6781"
 else
 CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := $(CONFIG_MTK_PLATFORM)
 endif
-
-$(info mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := $(CONFIG_MALI_PLATFORM_THIRDPARTY))
-$(info mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := $(CONFIG_MALI_PLATFORM_THIRDPARTY_NAME))
 
 CONFIG_MALI_DEBUG := y
 
@@ -48,7 +43,6 @@ ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DCONFIG_MTK_GPU_COMMON_DVFS
 # Enable by specific Family-ID
 ifneq (, $(findstring $(CONFIG_MTK_PLATFORM), "mt6885" "mt6873" "mt6853"))
 ccflags-y += -DMTK_GPU_BM_2
-$(info *GPU defined GPU BM QoS 2.0)
 endif
 
 # Enable by specific Family-ID
@@ -60,7 +54,6 @@ endif
 ifeq ($(CONFIG_MACH_MT6781),y)
 ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DGED_ENABLE_DVFS_LOADING_MODE
 ccflags-y += -DMTK_GPU_BM_2
-$(info *GPU defined GPU BM QoS 2.0)
 endif
 
 ifeq ($(CONFIG_MTK_IOMMU_V2),y)

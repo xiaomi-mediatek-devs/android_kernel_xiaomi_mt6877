@@ -325,7 +325,7 @@ static void mdla_irq_sw_sched(struct mdla_dev *mdla_device)
 	if (unlikely((irq_status & INTR_CONV_GCU_SAT_EXCEPTION_INT) ||
 				(irq_status & INRQ_CONV_AQU_ACC_SAT_EXCEPTION_INT) ||
 				(irq_status & INRQ_CONV_AQU_ADD_SAT_EXCEPTION_INT))) {
-		pr_info("unexpected IRQ status: core %x, irq_status: %x\n",
+		pr_debug("unexpected IRQ status: core %x, irq_status: %x\n",
 			core_id, irq_status);
 	}
 

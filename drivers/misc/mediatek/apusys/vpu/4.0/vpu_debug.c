@@ -333,7 +333,7 @@ static char *vpu_debug_simple_write(const char __user *buffer, size_t count)
 
 	ret = copy_from_user(buf, buffer, count);
 	if (ret) {
-		pr_info("%s: copy_from_user: ret=%d\n", __func__, ret);
+		pr_debug("%s: copy_from_user: ret=%d\n", __func__, ret);
 		kfree(buf);
 		buf = NULL;
 		goto out;
@@ -596,7 +596,7 @@ static ssize_t vpu_proc_vpu_memory_write(struct file *filp,
 {
 	char *buf, *cmd, *cur;
 
-	pr_info("%s:\n", __func__);
+	pr_debug("%s:\n", __func__);
 
 	buf = vpu_debug_simple_write(buffer, count);
 	if (!buf)
@@ -652,7 +652,7 @@ static ssize_t vpu_proc_mesg_level_write(struct file *filp,
 	}
 
 	if (level < -1 || level >= VPU_DBG_MSG_LEVEL_TOTAL) {
-		pr_info("val: %d\n", level);
+		pr_debug("val: %d\n", level);
 		goto free_buf;
 	}
 
@@ -875,7 +875,7 @@ DEFINE_SIMPLE_ATTRIBUTE(vpu_debug_jtag_fops, vpu_debug_jtag_get,
 			NULL, &vpu_debug_ ## name ## _fops); \
 	if (IS_ERR_OR_NULL(vpu_d##name)) { \
 		ret = PTR_ERR(vpu_d##name); \
-		pr_info("%s: vpu%d: " #name "): %d\n", \
+		pr_debug("%s: vpu%d: " #name "): %d\n", \
 			__func__, (vd) ? (vd->id) : 0, ret); \
 		goto out; \
 	} \
@@ -930,7 +930,7 @@ VPU_PROCFS_RW_DEF(mesg_level);
 		proc_root, &vpu_proc_ ## name ## _fops, vd); \
 	if (IS_ERR_OR_NULL(vpu_proc_entry_##name)) { \
 		ret = PTR_ERR(vpu_proc_entry_##name); \
-		pr_info("%s: vpu%d: " #name "): %d\n", \
+		pr_debug("%s: vpu%d: " #name "): %d\n", \
 			__func__, (vd) ? (vd->id) : 0, ret); \
 		goto out; \
 	} \
@@ -942,7 +942,7 @@ VPU_PROCFS_RW_DEF(mesg_level);
 		proc_root, &vpu_proc_ ## name ## _fops, vd); \
 	if (IS_ERR_OR_NULL(vpu_proc_entry_##name)) { \
 		ret = PTR_ERR(vpu_proc_entry_##name); \
-		pr_info("%s: vpu%d: " #name "): %d\n", \
+		pr_debug("%s: vpu%d: " #name "): %d\n", \
 			__func__, (vd) ? (vd->id) : 0, ret); \
 		goto out; \
 	} \
@@ -967,7 +967,7 @@ int vpu_init_dev_debug(struct platform_device *pdev, struct vpu_device *vd)
 	proc_root = proc_mkdir(vd->name, vpu_drv->proc_root);
 	if (IS_ERR_OR_NULL(proc_root)) {
 		ret = PTR_ERR(proc_root);
-		pr_info("%s: failed to create procfs node: vpu/%s: %d\n",
+		pr_debug("%s: failed to create procfs node: vpu/%s: %d\n",
 			__func__, vd->name, ret);
 		goto out;
 	}
@@ -984,7 +984,7 @@ int vpu_init_dev_debug(struct platform_device *pdev, struct vpu_device *vd)
 
 	if (IS_ERR_OR_NULL(droot)) {
 		ret = PTR_ERR(droot);
-		pr_info("%s: failed to create debugfs node: vpu/%s: %d\n",
+		pr_debug("%s: failed to create debugfs node: vpu/%s: %d\n",
 			__func__, vd->name, ret);
 		goto out;
 	}
@@ -1039,7 +1039,7 @@ int vpu_init_debug(void)
 
 	if (IS_ERR_OR_NULL(proc_root)) {
 		ret = PTR_ERR(proc_root);
-		pr_info("%s: failed to create procfs node: %d\n",
+		pr_debug("%s: failed to create procfs node: %d\n",
 			__func__, ret);
 		goto out;
 	}
@@ -1052,7 +1052,7 @@ int vpu_init_debug(void)
 
 	if (IS_ERR_OR_NULL(droot)) {
 		ret = PTR_ERR(droot);
-		pr_info("%s: failed to create debugfs node: %d\n",
+		pr_debug("%s: failed to create debugfs node: %d\n",
 			__func__, ret);
 		goto out;
 	}

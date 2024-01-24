@@ -37,9 +37,9 @@ extern void *apu_conn_top;
 #else
 #define LOG_DBG(format, args...)
 #endif
-#define LOG_INF(format, args...)    pr_info(MDLA_TAG " " format, ##args)
-#define LOG_WRN(format, args...)    pr_info(MDLA_TAG "[warn] " format, ##args)
-#define LOG_ERR(format, args...)    pr_info(MDLA_TAG "[error] " format, ##args)
+#define LOG_INF(format, args...)    pr_debug(MDLA_TAG " " format, ##args)
+#define LOG_WRN(format, args...)    pr_debug(MDLA_TAG "[warn] " format, ##args)
+#define LOG_ERR(format, args...)    pr_err(MDLA_TAG "[error] " format, ##args)
 
 enum MdlaFuncMask {
 	VFM_NEED_WAIT_VCORE		= 0x1,

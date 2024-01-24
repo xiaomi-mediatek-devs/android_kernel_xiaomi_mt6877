@@ -17,8 +17,8 @@
 #define MT_GPUFREQ_DYNAMIC_POWER_TABLE_UPDATE   1
 
 #define GPUFERQ_TAG	"[GPU/DVFS] "
-#define gpufreq_pr_info(fmt, args...)	pr_info(GPUFERQ_TAG fmt, ##args)
-#define gpufreq_pr_debug(fmt, args...)	pr_debug(GPUFERQ_TAG fmt, ##args)
+#define gpufreq_pr_info(fmt, args...)	pr_debug(GPUFERQ_TAG fmt, ##args)
+#define gpufreq_pr_debug(fmt, args...)
 
 #ifdef CONFIG_MTK_GPU_SUPPORT
 #define gpufreq_pr_logbuf(fmt, args...)			\
