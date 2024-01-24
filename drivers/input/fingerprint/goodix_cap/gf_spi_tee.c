@@ -391,7 +391,7 @@ static void gf_hw_power_enable(struct gf_device *gf_dev, u8 onoff)
 	struct spi_device *spi;
 	spi = gf_dev->spi;
 	int status = -EINVAL;
-	pr_err("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	buck = regulator_get(&spi->dev, "vfp");
 
 	if (buck == NULL) {
@@ -451,7 +451,7 @@ static void gf_spi_clk_enable(struct gf_device *gf_dev, u8 bonoff)
 {
 	if (bonoff) {
 		if (atomic_read(&clk_ref) == 0) {
-			pr_err("%s : ree control spi clk, enable spi clk\n",
+			pr_debug("%s : ree control spi clk, enable spi clk\n",
 			       __func__);
 			mt_spi_enable_master_clk(gf_dev->spi);
 		}
@@ -463,7 +463,7 @@ static void gf_spi_clk_enable(struct gf_device *gf_dev, u8 bonoff)
 		gf_debug(DEBUG_LOG, "%s : decrease spi clk ref to %d\n",
 			 __func__, atomic_read(&clk_ref));
 		if (atomic_read(&clk_ref) == 0) {
-			pr_err("%s :ree control spi clk, disable spi clk\n",
+			pr_debug("%s :ree control spi clk, disable spi clk\n",
 			       __func__);
 			mt_spi_disable_master_clk(gf_dev->spi);
 		}
@@ -988,7 +988,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case GF_IOC_RESET:
-		printk("%s: chip reset command\n", __func__);
+		gf_debug(DEBUG_LOG, "%s: chip reset command\n", __func__);
 		gf_hw_reset(gf_dev, 60);
 		break;
 
@@ -1003,12 +1003,12 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case GF_IOC_ENABLE_SPI_CLK:
-		printk("%s: GF_IOC_ENABLE_SPI_CLK ======\n", __func__);
+		gf_debug(DEBUG_LOG, "%s: GF_IOC_ENABLE_SPI_CLK ======\n", __func__);
 		gf_spi_clk_enable(gf_dev, 1);
 		break;
 
 	case GF_IOC_DISABLE_SPI_CLK:
-		printk("%s: GF_IOC_DISABLE_SPI_CLK ======\n", __func__);
+		gf_debug(DEBUG_LOG, "%s: GF_IOC_DISABLE_SPI_CLK ======\n", __func__);
 		gf_spi_clk_enable(gf_dev, 0);
 		break;
 
@@ -1436,7 +1436,7 @@ static ssize_t gf_debug_store(struct device *dev,
 			 "%s: parameter is -13, Vendor ID test --> 0x%x\n",
 			 __func__, g_vendor_id);
 		gf_spi_read_bytes(gf_dev, 0x0000, 4, rx_test);
-		printk("%s rx_test chip id:0x%x 0x%x 0x%x 0x%x \n", __func__,
+		gf_debug(DEBUG_LOG, "%s rx_test chip id:0x%x 0x%x 0x%x 0x%x \n", __func__,
 		       rx_test[0], rx_test[1], rx_test[2], rx_test[3]);
 	} else {
 		gf_debug(ERR_LOG, "%s: wrong parameter!===============\n",
@@ -2223,7 +2223,7 @@ static int gf_probe(struct spi_device *spi)
 	gf_debug(ERR_LOG, "%s, regulator_value %d!!\n", __func__,status);
 
 	/* get gpio info from dts or defination */
-	// printk("goodix goto test switch miso pin mode\n");
+	// gf_debug(DEBUG_LOG, "goodix goto test switch miso pin mode\n");
 
 	gf_get_gpio_dts_info(gf_dev);
 
@@ -2241,14 +2241,14 @@ static int gf_probe(struct spi_device *spi)
 	//pinctrl_select_state(gf_dev->pinctrl_gpios, gf_dev->pins_miso_spi);
 
 	/*enable the power */
-	pr_err("%s %d now get dts info done!", __func__, __LINE__);
+	pr_debug("%s %d now get dts info done!", __func__, __LINE__);
 	gf_hw_power_enable(gf_dev, 1);
 	gf_bypass_flash_gpio_cfg();
 
-	pr_err("%s %d now enable spi clk API", __func__, __LINE__);
+	pr_debug("%s %d now enable spi clk API", __func__, __LINE__);
 	gf_spi_clk_enable(gf_dev, 1);
 
-	pr_err("%s %d now enable spi clk Done", __func__, __LINE__);
+	pr_debug("%s %d now enable spi clk Done", __func__, __LINE__);
 
 	/* init freq ppm data */
 
@@ -2447,7 +2447,7 @@ static int gf_probe(struct spi_device *spi)
 	gf_dev->probe_finish = 1;
 	gf_dev->is_sleep_mode = 0;
 	gf_debug(INFO_LOG, "%s probe finished\n", __func__);
-	pr_err("%s %d now disable spi clk API", __func__, __LINE__);
+	pr_debug("%s %d now disable spi clk API", __func__, __LINE__);
 	gf_spi_clk_enable(gf_dev, 0);
 
 	gf_debug(ERR_LOG, "[gf][goodix_test] %s, probe success\n", __func__);
@@ -2580,7 +2580,7 @@ static int __init gf_init(void)
 	int status = 0;
 
 	FUNC_ENTRY();
-	pr_err("%s %d\n", __func__, __LINE__);
+	pr_debug("%s %d\n", __func__, __LINE__);
 	/*
 	   if (fpc1022_fp_exist) {
 	   pr_err("%s FPC sensor has been detected, so exit Goodxi sensor detect.\n",__func__);
