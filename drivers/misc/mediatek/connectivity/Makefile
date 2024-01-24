@@ -60,6 +60,9 @@ export MTK_WLAN_SERVICE=yes
 export CONNAC_VER=2_0
 export CFG_BUILD_CONNAC2=true
 
+# Remove debugging
+export TARGET_BUILD_VARIANT=user
+
 # Do build-in for xxx.c checking
 subdir-ccflags-y += -D MTK_WCN_REMOVE_KERNEL_MODULE
 subdir-ccflags-y += -D MTK_WCN_BUILT_IN_DRIVER
