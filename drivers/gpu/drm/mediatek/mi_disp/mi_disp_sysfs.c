@@ -345,7 +345,7 @@ static ssize_t panel_event_show(struct device *device,
 	struct disp_display *dd_ptr = to_disp_display(device);
 	struct mtk_dsi *dsi = (struct mtk_dsi *)dd_ptr->display;
 	if (!dsi) {
-		pr_info("%s-%d dsi is NULL \r\n",__func__, __LINE__);
+		pr_debug("%s-%d dsi is NULL \r\n",__func__, __LINE__);
 		return ret;
 	}
 	return snprintf(buf, PAGE_SIZE, "%d\n", dsi->panel_event);

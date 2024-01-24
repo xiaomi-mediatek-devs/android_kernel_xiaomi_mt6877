@@ -62,7 +62,7 @@ static int mi_disp_debugfs_debug_log_init(void)
 		DISP_ERROR("create debugfs entry failed for %s\n", DEBUG_LOG_DEBUGFS_NAME);
 		ret = -ENODEV;
 	} else {
-		DISP_INFO("create debugfs %s success!\n", DEBUG_LOG_DEBUGFS_NAME);
+		DISP_DEBUG("create debugfs %s success!\n", DEBUG_LOG_DEBUGFS_NAME);
 		ret = 0;
 	}
 
@@ -110,11 +110,11 @@ static ssize_t mi_disp_debugfs_esd_sw_write(struct file *file,
 		goto exit;
 	}
 	input[count] = '\0';
-	DISP_INFO("[esd-test]intput esd test: %s\n", input);
+	DISP_DEBUG("[esd-test]intput esd test: %s\n", input);
 
 	if (!strncmp(input, "1", 1) || !strncmp(input, "on", 2) ||
 		!strncmp(input, "true", 4)) {
-		DISP_INFO("[esd-test]panel esd irq trigging \n");
+		DISP_DEBUG("[esd-test]panel esd irq trigging \n");
 	} else {
 		goto exit;
 	}
@@ -157,11 +157,11 @@ static int mi_disp_debugfs_esd_sw_init(void *d_display, int disp_id)
 			DISP_ERROR("create debugfs entry failed for %s\n", esd_sw_str[disp_id]);
 			ret = -ENODEV;
 		} else {
-			DISP_INFO("create debugfs %s success!\n", esd_sw_str[disp_id]);
+			DISP_DEBUG("create debugfs %s success!\n", esd_sw_str[disp_id]);
 			ret = 0;
 		}
 	} else {
-		DISP_INFO("unknown display id\n");
+		DISP_DEBUG("unknown display id\n");
 		ret = -EINVAL;
 	}
 

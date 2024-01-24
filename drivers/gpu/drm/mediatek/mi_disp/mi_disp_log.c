@@ -582,7 +582,7 @@ int mi_disp_log_init(void)
 	int i = 0;
 
 	if (g_disp_log) {
-		pr_info("mi disp_log already initialized, return!\n");
+		pr_debug("mi disp_log already initialized, return!\n");
 		return 0;
 	}
 
@@ -638,7 +638,7 @@ int mi_disp_log_init(void)
 	disp_log->initialized = true;
 	g_disp_log = disp_log;
 
-	pr_info("mi disp_log driver initialized!\n");
+	pr_debug("mi disp_log driver initialized!\n");
 
 	return 0;
 
