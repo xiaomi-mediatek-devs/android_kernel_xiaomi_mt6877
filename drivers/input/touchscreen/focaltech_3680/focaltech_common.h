@@ -180,15 +180,15 @@ struct ts_ic_info {
  * DEBUG function define here
  *****************************************************************************/
 #if FTS_DEBUG_EN
-#define FTS_DEBUG(fmt, args...) pr_info("[FTS_TS]%s:" fmt "\n", __func__, ##args)
-#define FTS_FUNC_ENTER() pr_info("[FTS_TS]%s: Enter\n", __func__)
-#define FTS_FUNC_EXIT() pr_info("[FTS_TS]%s: Exit(%d)\n", __func__, __LINE__)
+#define FTS_DEBUG(fmt, args...) pr_debug("[FTS_TS]%s:" fmt "\n", __func__, ##args)
+#define FTS_FUNC_ENTER() pr_debug("[FTS_TS]%s: Enter\n", __func__)
+#define FTS_FUNC_EXIT() pr_debug("[FTS_TS]%s: Exit(%d)\n", __func__, __LINE__)
 #else /* #if FTS_DEBUG_EN*/
 #define FTS_DEBUG(fmt, args...)
 #define FTS_FUNC_ENTER()
 #define FTS_FUNC_EXIT()
 #endif
 
-#define FTS_INFO(fmt, args...) pr_info("[FTS_TS/I]%s:" fmt "\n", __func__, ##args)
+#define FTS_INFO(fmt, args...) pr_debug("[FTS_TS/I]%s:" fmt "\n", __func__, ##args)
 #define FTS_ERROR(fmt, args...) pr_err("[FTS_TS/E]%s:" fmt "\n", __func__, ##args)
 #endif /* __LINUX_FOCALTECH_COMMON_H__ */
