@@ -253,7 +253,7 @@ static int mi_disp_ioctl_set_feature(struct disp_feature_client *client, void *d
 				ret = mi_dsi_display_set_disp_param(dd_ptr->display, &ctl);
 			}
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 			goto err_free_rx;
@@ -265,7 +265,7 @@ static int mi_disp_ioctl_set_feature(struct disp_feature_client *client, void *d
 			}
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -292,12 +292,12 @@ static void mi_disp_set_doze_brightness_work_handler(struct kthread_work *work)
 
 	if (is_support_doze_brightness(doze_brightness)) {
 		atomic_inc(&dd_ptr->pending_doze_cnt);
-		DISP_INFO("pending_doze_cnt = %d\n", atomic_read(&dd_ptr->pending_doze_cnt));
+		DISP_DEBUG("pending_doze_cnt = %d\n", atomic_read(&dd_ptr->pending_doze_cnt));
 		if (doze_brightness == DOZE_TO_NORMAL) {
 			ret = wait_event_freezable(*(cur_work->wq),
 				dsi_panel_initialized(display));
 			if (ret) {
-				DISP_INFO("wait_event_freezable ret = %d\n", ret);
+				DISP_DEBUG("wait_event_freezable ret = %d\n", ret);
 				/* Some event woke us up, so let's quit */
 				goto exit;
 			}
@@ -306,7 +306,7 @@ static void mi_disp_set_doze_brightness_work_handler(struct kthread_work *work)
 			ret = wait_event_freezable(*(cur_work->wq),
 				dsi_panel_initialized(display));
 			if (ret) {
-				DISP_INFO("wait_event_freezable ret = %d\n", ret);
+				DISP_DEBUG("wait_event_freezable ret = %d\n", ret);
 				/* Some event woke us up, so let's quit */
 				goto exit;
 			}
@@ -362,7 +362,7 @@ static int mi_disp_ioctl_set_doze_brightness(
 	if (is_support_disp_id(disp_id)) {
 		dd_ptr = &df->d_display[disp_id];
 		if (dd_ptr->intf_type == MI_INTF_DSI) {
-			DISP_INFO("%s display doze_brightness = %d\n",
+			DISP_DEBUG("%s display doze_brightness = %d\n",
 				get_disp_id_name(disp_id), doze_brightness);
 			if (req->base.flag == MI_DISP_FLAG_NONBLOCK) {
 				mi_disp_set_doze_brightness_queue_work(dd_ptr,
@@ -372,12 +372,12 @@ static int mi_disp_ioctl_set_doze_brightness(
 						doze_brightness);
 			}
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -404,12 +404,12 @@ static int mi_disp_ioctl_get_doze_brightness(
 			ret = mi_dsi_display_get_doze_brightness(dd_ptr->display,
 					&req->doze_brightness);
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -436,17 +436,17 @@ static int mi_disp_ioctl_set_brightness(
 	if (is_support_disp_id(disp_id)) {
 		dd_ptr = &df->d_display[disp_id];
 		if (dd_ptr->intf_type == MI_INTF_DSI) {
-			DISP_INFO("%s display brightness = %d\n",
+			DISP_DEBUG("%s display brightness = %d\n",
 				get_disp_id_name(disp_id), brightness);
 			ret = mi_dsi_display_set_brightness(dd_ptr->display,
 					brightness);
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -473,12 +473,12 @@ static int mi_disp_ioctl_get_brightness(
 			ret = mi_dsi_display_get_brightness(dd_ptr->display,
 					&req->brightness);
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -511,12 +511,12 @@ static int mi_disp_ioctl_get_panel_info(struct disp_feature_client *client, void
 				}
 			}
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -548,12 +548,12 @@ static int mi_disp_ioctl_get_wp_info(struct disp_feature_client *client, void *d
 				}
 			}
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -575,12 +575,12 @@ static int mi_disp_ioctl_get_fps(struct disp_feature_client *client, void *data)
 			display = (struct mtk_dsi *)dd_ptr->display;
 			mi_dsi_display_get_fps(display, &req->fps);
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -602,19 +602,19 @@ static int mi_disp_ioctl_register_event(struct disp_feature_client *client,
 	if (is_support_disp_id(disp_id)) {
 		if (is_support_disp_event_type(type)) {
 			if (test_bit(type, client->disp[disp_id].evbit)) {
-				DISP_INFO("%s display %s event already register!\n",
+				DISP_DEBUG("%s display %s event already register!\n",
 					get_disp_id_name(disp_id), get_disp_event_type_name(type));
 			} else {
 				set_bit(type, client->disp[disp_id].evbit);
-				DISP_INFO("%s display %s event register\n",
+				DISP_DEBUG("%s display %s event register\n",
 					get_disp_id_name(disp_id), get_disp_event_type_name(type));
 			}
 		} else {
-			DISP_INFO("invalid event type!\n");
+			DISP_DEBUG("invalid event type!\n");
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -639,18 +639,18 @@ static int mi_disp_ioctl_deregister_event(struct disp_feature_client *client,
 		if (is_support_disp_event_type(type)) {
 			if (test_bit(type, client->disp[disp_id].evbit)) {
 				clear_bit(type, client->disp[disp_id].evbit);
-				DISP_INFO("%s display %s event deregister\n",
+				DISP_DEBUG("%s display %s event deregister\n",
 					get_disp_id_name(disp_id), get_disp_event_type_name(type));
 			} else {
-				DISP_INFO("%s display %s event already deregister!\n",
+				DISP_DEBUG("%s display %s event already deregister!\n",
 					get_disp_id_name(disp_id), get_disp_event_type_name(type));
 			}
 		} else {
-			DISP_INFO("invalid event type!\n");
+			DISP_DEBUG("invalid event type!\n");
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -696,12 +696,12 @@ static int mi_disp_ioctl_write_dsi_cmd(
 			}
 			ret = mi_dsi_display_write_dsi_cmd(dd_ptr->display, &ctl);
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -778,12 +778,12 @@ static int mi_disp_ioctl_read_dsi_cmd(
 				DISP_DEBUG("rx_ptr[%d] = 0x%02X\n", i, ctl.rx_ptr[i]);
 			}
 		} else {
-			DISP_INFO("Unsupported display(%s intf)\n",
+			DISP_DEBUG("Unsupported display(%s intf)\n",
 				get_disp_intf_type_name(dd_ptr->intf_type));
 			ret = -EINVAL;
 		}
 	} else {
-		DISP_INFO("Unsupported display id\n");
+		DISP_DEBUG("Unsupported display id\n");
 		ret = -EINVAL;
 	}
 
@@ -847,7 +847,7 @@ long mi_disp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	func = ioctl->func;
 
 	if (unlikely(!func)) {
-		pr_info("no function\n");
+		pr_debug("no function\n");
 		ret = -EINVAL;
 		goto err_i1;
 	}

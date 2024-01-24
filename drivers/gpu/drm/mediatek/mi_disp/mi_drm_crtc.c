@@ -23,7 +23,7 @@
 static bool is_backlight_set_block(struct mtk_dsi *dsi, u32 bl_lvl)
 {
 	if (!dsi->mi_cfg.bl_enable && bl_lvl) {
-		DISP_INFO("%s true lvl= %d bl_enable= %d\n", __func__, bl_lvl, dsi->mi_cfg.bl_enable);
+		DISP_DEBUG("%s true lvl= %d bl_enable= %d\n", __func__, bl_lvl, dsi->mi_cfg.bl_enable);
 		return true;
 	}
 	return false;
@@ -58,7 +58,7 @@ int mi_drm_bl_wait_for_completion(struct drm_crtc *crtc, unsigned int level)
 
 		reinit_completion(&dsi->bl_wait_completion);
 		ret = wait_for_completion_timeout(&dsi->bl_wait_completion, msecs_to_jiffies(1000));
-		DISP_INFO("bl_wait_for_completion_timeout return %d\n", ret);
+		DISP_DEBUG("bl_wait_for_completion_timeout return %d\n", ret);
 
 		mtk_drm_trace_end();
 	}
@@ -89,7 +89,7 @@ static int mi_drm_update_aod_status(struct mtk_dsi *dsi, bool doze_state, bool i
 				complete(&dsi->bl_wait_completion);
 				mi_cfg->bl_enable = true;
 				mi_cfg->bl_wait_frame = false;
-				DISP_INFO("bl_wait_completion complete\n");
+				DISP_DEBUG("bl_wait_completion complete\n");
 			} else {
 				mi_cfg->bl_wait_frame = true;
 			}
@@ -133,7 +133,7 @@ int mi_drm_crtc_update_layer_state(struct drm_crtc *crtc)
 	mtk_drm_trace_c("%d|MI_LAYER_AOD|%d", MI_TRACE_LAYER_ID, cur_flags.aod_flag);
 
 	if (cur_flags.aod_flag != last_flags->aod_flag)
-		DISP_INFO("layer AOD = %d\n", cur_flags.aod_flag);
+		DISP_DEBUG("layer AOD = %d\n", cur_flags.aod_flag);
 
 	if (crtc_id == 0)
 		mi_drm_update_aod_status(dsi, doze_state, !cur_flags.aod_flag);

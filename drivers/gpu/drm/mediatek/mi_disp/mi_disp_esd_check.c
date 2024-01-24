@@ -156,17 +156,17 @@ static irqreturn_t _mi_esd_check_err_flag_irq_handler(int irq, void *data)
 		|| ((mi_esd_ctx->err_flag_irq_flags & IRQF_TRIGGER_RISING
 		|| mi_esd_ctx->err_flag_irq_flags & IRQF_TRIGGER_HIGH)
 		&& !gpio_get_value(mi_esd_ctx->err_flag_irq_gpio))) {
-		pr_info("[ESD] err flag pin level is normal\n");
+		pr_debug("[ESD] err flag pin level is normal\n");
 		return IRQ_HANDLED;
 	}
 
 	if (mi_esd_ctx->panel_init) {
 		atomic_set(&mi_esd_ctx->err_flag_event, 1);
 		wake_up_interruptible(&mi_esd_ctx->err_flag_wq);
-		pr_info("[ESD]_esd_check_err_flag_irq_handler is comming\n");
+		pr_debug("[ESD]_esd_check_err_flag_irq_handler is comming\n");
 	}
 	else {
-		pr_info("[ESD]_esd_check_err_flag_irq_handler is comming, but ignore\n");
+		pr_debug("[ESD]_esd_check_err_flag_irq_handler is comming, but ignore\n");
 	}
 	return IRQ_HANDLED;
 }
@@ -246,7 +246,7 @@ static int mi_esd_err_flag_irq_check_worker_kthread(void *data)
 	msleep(110);
 	mi_disp_err_flag_esd_check_switch(crtc, true);
 
-	pr_info("start ESD thread\n");
+	pr_debug("start ESD thread\n");
 	while (1) {
 		msleep(ESD_CHECK_IRQ_PERIOD); /* 10ms */
 		ret = wait_event_interruptible(mi_esd_ctx->err_flag_wq,
@@ -255,7 +255,7 @@ static int mi_esd_err_flag_irq_check_worker_kthread(void *data)
 			DDPINFO("[ESD]check thread waked up accidently\n");
 			continue;
 		}
-		pr_info("ESD waked up\n");
+		pr_debug("ESD waked up\n");
 		DDPINFO("[ESD]check thread waked up successfully\n");
 		mutex_lock(&private->commit.lock);
 		DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
@@ -271,7 +271,7 @@ static int mi_esd_err_flag_irq_check_worker_kthread(void *data)
 		atomic_set(&mi_esd_ctx->err_flag_event, 0);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		mutex_unlock(&private->commit.lock);
-		pr_info("[ESD]check thread is over\n");
+		pr_debug("[ESD]check thread is over\n");
 		/* 3.other check & recovery */
 		if (kthread_should_stop())
 			break;
@@ -298,25 +298,25 @@ int mi_disp_esd_irq_ctrl(struct mi_esd_ctx *mi_esd_ctx,
 				if (!mi_esd_ctx->err_flag_enabled) {
 					desc = irq_to_desc(mi_esd_ctx->err_flag_irq);
 					if (!irq_settings_is_level(desc)) {
-						pr_info("clear pending esd irq\n");
+						pr_debug("clear pending esd irq\n");
 						desc->istate &= ~IRQS_PENDING;
 					}
 					enable_irq_wake(mi_esd_ctx->err_flag_irq);
 					enable_irq(mi_esd_ctx->err_flag_irq);
 					mi_esd_ctx->err_flag_enabled = true;
-					pr_info("panel esd irq is enable\n");
+					pr_debug("panel esd irq is enable\n");
 				}
 			} else {
 				if (mi_esd_ctx->err_flag_enabled) {
 					disable_irq_wake(mi_esd_ctx->err_flag_irq);
 					disable_irq_nosync(mi_esd_ctx->err_flag_irq);
 					mi_esd_ctx->err_flag_enabled = false;
-					pr_info("panel esd irq is disable\n");
+					pr_debug("panel esd irq is disable\n");
 				}
 			}
 		}
 	} else {
-		pr_info("panel esd irq gpio invalid\n");
+		pr_debug("panel esd irq gpio invalid\n");
 	}
 	return 0;
 }
