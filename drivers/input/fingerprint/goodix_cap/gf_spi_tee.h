@@ -24,11 +24,11 @@
 #define DEBUG_LOG (2)
 
 /* debug log setting */
-u8 g_debug_level = DEBUG_LOG;
+u8 g_debug_level = ERR_LOG;
 
 #define gf_debug(level, fmt, args...) do { \
 			if (g_debug_level >= level) {\
-				pr_warn("[goodixFP] " fmt, ##args); \
+				pr_debug("[goodixFP] " fmt, ##args); \
 			} \
 		} while (0)
 
