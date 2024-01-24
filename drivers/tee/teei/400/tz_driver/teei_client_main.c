@@ -1215,8 +1215,7 @@ static int teei_client_init(void)
 #ifdef CONFIG_MICROTRUST_TZ_LOG
 	init_tlog_comp_fn();
 
-/*
- 	create the teei log thread
+	/* create the teei log thread */
 	teei_log_task = kthread_create(teei_log_fn, NULL, "teei_log_thread");
 	if (IS_ERR(teei_log_task)) {
 		IMSG_ERROR("create teei log thread failed: %ld\n",
@@ -1229,7 +1228,6 @@ static int teei_client_init(void)
 #endif
 
 	IMSG_DEBUG("create the sub_thread successfully!\n");
-*/
 
 	teei_config_init();
 
