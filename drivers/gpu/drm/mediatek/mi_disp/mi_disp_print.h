@@ -58,7 +58,7 @@ void mi_disp_local_time_dbg(const char *format, ...);
 #else /* !MI_DISP_PRINT_ENABLE */
 #define DISP_WARN(fmt, ...)     \
 		printk(KERN_WARNING, fmt, ##__VA_ARGS__)
-#define DISP_INFO(fmt, ...)     \
+#define DISP_DEBUG(fmt, ...)     \
 		printk(KERN_INFO, fmt, ##__VA_ARGS__)
 #define DISP_ERROR(fmt, ...)    \
 		printk(KERN_ERR, fmt, ##__VA_ARGS__)

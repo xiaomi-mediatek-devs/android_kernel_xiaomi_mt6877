@@ -37,7 +37,7 @@ int mi_disp_boost_init(void)
 			if (!policy)
 				continue;
 
-			DISP_INFO("%s, policy: first:%d, min:%d, max:%d",
+			DISP_DEBUG("%s, policy: first:%d, min:%d, max:%d",
 				__func__, policy->cpu, policy->min, policy->max);
 
 			req_policy = kzalloc(sizeof(*req_policy), GFP_KERNEL);

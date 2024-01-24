@@ -45,7 +45,7 @@ int mi_disp_notifier_call_chain(unsigned long val, void *v)
 {
 	int ret = 0;
 
-	pr_info("%s, notify = 0x%x\n", __func__, val);
+	pr_debug("%s, notify = 0x%x\n", __func__, val);
 
 	mtk_drm_trace_begin("%s: val 0x%x\n", __func__, val);
 	ret = blocking_notifier_call_chain(&mi_disp_notifier_list, val, v);

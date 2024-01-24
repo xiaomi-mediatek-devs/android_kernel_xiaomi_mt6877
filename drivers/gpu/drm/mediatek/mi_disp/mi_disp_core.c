@@ -51,7 +51,7 @@ int mi_disp_cdev_register(const char *name,
 		goto err_cdev_del;
 	}
 
-	pr_info("cdev name = %s, dev_id = (%d:%d)", name, MAJOR(dev_id), MINOR(dev_id));
+	pr_debug("cdev name = %s, dev_id = (%d:%d)", name, MAJOR(dev_id), MINOR(dev_id));
 	*cdevp = cdev;
 	return 0;
 
@@ -109,7 +109,7 @@ int mi_disp_core_init(void)
 	struct disp_core *disp_core = NULL;
 
 	if (g_disp_core) {
-		pr_info("mi disp_core already initialized, return!\n");
+		pr_debug("mi disp_core already initialized, return!\n");
 		return 0;
 	}
 
@@ -145,7 +145,7 @@ int mi_disp_core_init(void)
 	disp_core->initialized = true;
 	g_disp_core = disp_core;
 
-	pr_info("mi disp_core driver initialized!\n");
+	pr_debug("mi disp_core driver initialized!\n");
 
 	return 0;
 

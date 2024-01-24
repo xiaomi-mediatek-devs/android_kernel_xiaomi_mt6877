@@ -28,7 +28,7 @@ struct mtk_dsi * mi_get_primary_dsi_display(void)
 		dd_ptr = &df->d_display[MI_DISP_PRIMARY];
 		if (dd_ptr->display && dd_ptr->intf_type == MI_INTF_DSI) {
 			dsi = (struct mtk_dsi *)dd_ptr->display;
-			DISP_INFO("return mtk_dsi\n");
+			DISP_DEBUG("return mtk_dsi\n");
 			return dsi;
 		} else {
 			return NULL;
@@ -127,7 +127,7 @@ int mi_disp_lhbm_fod_thread_create(struct disp_feature *df, int disp_id)
 	}
 
 	if (!mi_disp_lhbm_fod_enabled(dsi)) {
-		DISP_INFO("%s panel is not local hbm\n", get_disp_id_name(disp_id));
+		DISP_DEBUG("%s panel is not local hbm\n", get_disp_id_name(disp_id));
 		return 0;
 	}
 
@@ -168,7 +168,7 @@ int mi_disp_lhbm_fod_thread_create(struct disp_feature *df, int disp_id)
 
 	g_lhbm_fod[disp_id] = lhbm_fod;
 
-	DISP_INFO("create disp_lhbm_fod:%d kthread success\n", disp_id);
+	DISP_DEBUG("create disp_lhbm_fod:%d kthread success\n", disp_id);
 
 	return ret;
 
@@ -201,7 +201,7 @@ int mi_disp_lhbm_fod_thread_destroy(struct disp_feature *df, int disp_id)
 	df->d_display[disp_id].lhbm_fod_ptr = NULL;
 	g_lhbm_fod[disp_id] = NULL;
 
-	DISP_INFO("destroy disp_lhbm_fod:%d kthread success\n", disp_id);
+	DISP_DEBUG("destroy disp_lhbm_fod:%d kthread success\n", disp_id);
 
 	return ret;
 }
@@ -231,7 +231,7 @@ int mi_disp_lhbm_fod_allow_tx_lhbm(struct mtk_dsi *dsi,
 	if (lhbm_fod->dsi == dsi &&
 		atomic_read(&lhbm_fod->allow_tx_lhbm) != enable) {
 		atomic_set(&lhbm_fod->allow_tx_lhbm, enable);
-		DISP_INFO("%s display allow_tx_lhbm = %d\n",
+		DISP_DEBUG("%s display allow_tx_lhbm = %d\n",
 			mi_get_disp_id("primary"), enable);
 	}
 	return 0;
@@ -318,7 +318,7 @@ int mi_disp_lhbm_fod_wakeup_pending_work(struct mtk_dsi *dsi)
 		DISP_DEBUG("%s pending_fod_cnt = %d\n",
 			dsi->display_type, atomic_read(&lhbm_fod->pending_fod_cnt));
 		if (atomic_read(&lhbm_fod->pending_fod_cnt)) {
-			DISP_INFO("%s display wake up local hbm fod work\n",
+			DISP_DEBUG("%s display wake up local hbm fod work\n",
 				dsi->display_type);
 			wake_up_interruptible(&lhbm_fod->fod_pending_wq);
 		}
@@ -351,7 +351,7 @@ static int mi_disp_lhbm_fod_event_notify(struct disp_lhbm_fod *lhbm_fod, int fod
 		refresh_rate = 120;
 		ui_ready_delay_frame = dsi->mi_cfg.lhbm_ui_ready_delay_frame;
 		delay_us = 1000000 / refresh_rate * ui_ready_delay_frame;
-		DISP_INFO("refresh_rate(%d), delay (%d) frame, delay_us(%llu)\n",
+		DISP_DEBUG("refresh_rate(%d), delay (%d) frame, delay_us(%llu)\n",
 				refresh_rate, ui_ready_delay_frame, delay_us);
 		usleep_range(delay_us, delay_us + 10);
 	}
@@ -366,7 +366,7 @@ static int mi_disp_lhbm_fod_event_notify(struct disp_lhbm_fod *lhbm_fod, int fod
 	}
 	mi_disp_feature_event_notify_by_type(mi_get_disp_id("primary"), MI_DISP_EVENT_FOD, sizeof(fod_ui_ready), fod_ui_ready);
 
-	DISP_INFO("%s display fod_ui_ready notify=%d\n",
+	DISP_DEBUG("%s display fod_ui_ready notify=%d\n",
 		dsi->display_type, fod_ui_ready);
 
 	return 0;
@@ -504,7 +504,7 @@ void mi_disp_lhbm_animal_status_update(struct mtk_dsi *dsi,
 	else
 		ctl.feature_val = FEATURE_OFF;
 
-	DISP_INFO("mi_disp_lhbm_animal_status_update feature_val:%d\n", ctl.feature_val);
+	DISP_DEBUG("mi_disp_lhbm_animal_status_update feature_val:%d\n", ctl.feature_val);
 	mi_dsi_display_set_disp_param(dsi, &ctl);
 }
 
@@ -516,12 +516,12 @@ static void mi_disp_lhbm_fod_work_handler(struct kthread_work *work)
 	int fod_status = FOD_EVENT_MAX;
 	u32 op_code;
 
-	DISP_INFO("fod_work_handler --- start\n");
+	DISP_DEBUG("fod_work_handler --- start\n");
 
 	mutex_lock(&lhbm_fod->mutex_lock);
 	atomic_set(&lhbm_fod->fod_work_status, FOD_WORK_DOING);
 
-	DISP_INFO("from_touch(%d), fod_status(%d)\n",
+	DISP_DEBUG("from_touch(%d), fod_status(%d)\n",
 			fod_work->from_touch, fod_work->fod_status);
 
 	spin_lock(&lhbm_fod->spinlock);
@@ -530,12 +530,12 @@ static void mi_disp_lhbm_fod_work_handler(struct kthread_work *work)
 		spin_unlock(&lhbm_fod->spinlock);
 		mutex_unlock(&lhbm_fod->mutex_lock);
 
-		DISP_INFO("wait until sde connector bridge enable\n");
+		DISP_DEBUG("wait until sde connector bridge enable\n");
 		rc = wait_event_interruptible(lhbm_fod->fod_pending_wq,
 				atomic_read(&lhbm_fod->allow_tx_lhbm));
 		if (rc) {
 			/* Some event woke us up, so let's quit */
-			DISP_INFO("wait_event_interruptible rc = %d\n", rc);
+			DISP_DEBUG("wait_event_interruptible rc = %d\n", rc);
 			spin_lock(&lhbm_fod->spinlock);
 			atomic_add_unless(&lhbm_fod->pending_fod_cnt, -1, 0);
 			atomic_set(&lhbm_fod->fod_work_status, FOD_WORK_DONE);
@@ -551,14 +551,14 @@ static void mi_disp_lhbm_fod_work_handler(struct kthread_work *work)
 		if (atomic_read(&lhbm_fod->unset_fod_status) != FOD_EVENT_MAX) {
 			if (atomic_read(&lhbm_fod->current_fod_status) !=
 				atomic_read(&lhbm_fod->unset_fod_status)) {
-				DISP_INFO("unset_fod_status = %d, fod_status = %d\n",
+				DISP_DEBUG("unset_fod_status = %d, fod_status = %d\n",
 					atomic_read(&lhbm_fod->unset_fod_status),
 					fod_work->fod_status);
 				fod_work->fod_status = atomic_read(&lhbm_fod->unset_fod_status);
 				atomic_set(&lhbm_fod->unset_fod_status, FOD_EVENT_MAX);
 				atomic_set(&lhbm_fod->unset_from_touch, 0);
 			} else {
-				DISP_INFO("current/unset_fod_status = %d, fod_status = %d, skip\n",
+				DISP_DEBUG("current/unset_fod_status = %d, fod_status = %d, skip\n",
 					atomic_read(&lhbm_fod->unset_fod_status),
 					fod_work->fod_status);
 				atomic_set(&lhbm_fod->unset_fod_status, FOD_EVENT_MAX);
@@ -596,7 +596,7 @@ static void mi_disp_lhbm_fod_work_handler(struct kthread_work *work)
 	atomic_set(&lhbm_fod->fod_work_status, FOD_WORK_DONE);
 	mutex_unlock(&lhbm_fod->mutex_lock);
 
-	DISP_INFO("fod_work_handler --- end\n");
+	DISP_DEBUG("fod_work_handler --- end\n");
 
 exit:
 	kfree(fod_work);
@@ -612,7 +612,7 @@ int mi_disp_set_fod_queue_work(u32 fod_status, bool from_touch)
 	int rc = 0;
 
 	if (fod_status == mi_disp_fod_status) {
-		DISP_INFO("%s Don't report after the first time anymore \n", __func__);
+		DISP_DEBUG("%s Don't report after the first time anymore \n", __func__);
 		return 0;
 	}
 	mi_disp_fod_status = fod_status;
@@ -633,11 +633,11 @@ int mi_disp_set_fod_queue_work(u32 fod_status, bool from_touch)
 		return -EINVAL;
 	}
 
-	DISP_INFO("start: from_touch(%d), fod_status(%d)\n", from_touch, fod_status);
+	DISP_DEBUG("start: from_touch(%d), fod_status(%d)\n", from_touch, fod_status);
 
 	spin_lock_irqsave(&lhbm_fod->spinlock, flags);
 	if (atomic_read(&lhbm_fod->pending_fod_cnt)) {
-		DISP_INFO("pending event: current_fod_status(%d), new fod_status(%d), skip\n",
+		DISP_DEBUG("pending event: current_fod_status(%d), new fod_status(%d), skip\n",
 		atomic_read(&lhbm_fod->current_fod_status), fod_status);
 		atomic_set(&lhbm_fod->unset_fod_status, fod_status);
 		atomic_set(&lhbm_fod->unset_from_touch, from_touch);
@@ -648,7 +648,7 @@ int mi_disp_set_fod_queue_work(u32 fod_status, bool from_touch)
 					struct lhbm_fod_work, node);
 			if (entry->fod_status == fod_status &&
 				entry->from_touch == from_touch) {
-				DISP_INFO("same event: equal to the last member in list,"
+				DISP_DEBUG("same event: equal to the last member in list,"
 					"from_touch(%d), fod_status(%d), skip\n",
 					from_touch, fod_status);
 				goto exit;

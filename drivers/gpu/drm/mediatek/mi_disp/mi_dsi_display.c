@@ -304,7 +304,7 @@ int mi_dsi_display_set_thermal_limit_brightness_clone(void *display,
 	dsi_display->mi_cfg.thermal_max_brightness_clone = brightness_clone;
 
 	if (dsi_display->mi_cfg.real_brightness_clone == -1) {
-		DISP_INFO("thermal set cur_state early, not brightness_clone set record\n");
+		DISP_DEBUG("thermal set cur_state early, not brightness_clone set record\n");
 		mi_dsi_display_set_brightness_clone(dsi_display, (dsi_display->mi_cfg.max_brightness_clone + 1) / 4);
 	} else {
 		mi_dsi_display_set_brightness_clone(dsi_display, dsi_display->mi_cfg.real_brightness_clone);
@@ -338,9 +338,9 @@ void mi_dsi_display_wakeup_pending_doze_work(void *display)
 	}
 
 	dd_ptr = &df->d_display[MI_DISP_PRIMARY];
-	DISP_INFO("pending_doze_cnt = %d\n", atomic_read(&dd_ptr->pending_doze_cnt));
+	DISP_DEBUG("pending_doze_cnt = %d\n", atomic_read(&dd_ptr->pending_doze_cnt));
 	if (atomic_read(&dd_ptr->pending_doze_cnt)) {
-		DISP_INFO("display wake up pending doze brightness work\n");
+		DISP_DEBUG("display wake up pending doze brightness work\n");
 		wake_up_all(&dd_ptr->pending_wq);
 	}
 

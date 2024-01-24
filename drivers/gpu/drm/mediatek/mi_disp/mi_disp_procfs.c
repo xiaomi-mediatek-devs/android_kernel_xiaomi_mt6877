@@ -123,7 +123,7 @@ static int mi_disp_procfs_mipi_rw_init(void *d_display, int disp_id)
 			DISP_ERROR("create procfs entry failed for %s\n", mipi_rw_str[disp_id]);
 			ret = -ENODEV;
 		} else {
-			DISP_INFO("create procfs %s success!\n", mipi_rw_str[disp_id]);
+			DISP_DEBUG("create procfs %s success!\n", mipi_rw_str[disp_id]);
 			ret = 0;
 		}
 	} else {
