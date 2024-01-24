@@ -86,12 +86,12 @@ void elliptic_data_print_debug_counters(struct elliptic_data *elliptic_data)
 
 	if (elliptic_data->userspace_read_total !=
 		elliptic_data->isr_write_total) {
-		pr_info("[ELUS] user space reads / isr writes : %u / %u",
+		pr_debug("[ELUS] user space reads / isr writes : %u / %u",
 			elliptic_data->userspace_read_total,
 			elliptic_data->isr_write_total);
 	}
 
-	pr_info("[ELUS] total isr fifo discarded frame count : %u",
+	pr_debug("[ELUS] total isr fifo discarded frame count : %u",
 		elliptic_data->isr_fifo_discard_total);
 }
 

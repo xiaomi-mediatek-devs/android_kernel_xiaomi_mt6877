@@ -54,7 +54,7 @@ static struct elliptic_ipi_handler_data_t elliptic_ipi_handler_data;
 int32_t elliptic_debug_io_open(void)
 {
 
-	pr_info("[ELUS] %s()", __func__);
+	pr_debug("[ELUS] %s()", __func__);
 	if (debug_segment.reserved == 0) {
 		debug_segment.phys =
 			scp_get_reserve_mem_phys(SCP_ELLIPTIC_DEBUG_MEM);
@@ -71,7 +71,7 @@ int32_t elliptic_debug_io_open(void)
 
 int32_t elliptic_debug_io_close(void)
 {
-	pr_info("[ELUS] %s()", __func__);
+	pr_debug("[ELUS] %s()", __func__);
 	return 0;
 }
 
@@ -83,7 +83,7 @@ static void copy_to_local_ap_cache(
 		struct elliptic_shared_data_block *data_block =
 		    elliptic_get_shared_obj(shared_object_id);
 		memcpy(data_block->buffer, payload, shared_object_size);
-		pr_info("[ELUS] %s copied to local AP cache, size: %u",
+		pr_debug("[ELUS] %s copied to local AP cache, size: %u",
 			       name, msg_header->data_size);
 	} else {
 		pr_debug("[ELUS] %s - illegal size: %u",
@@ -162,7 +162,7 @@ static void elliptic_data_io_ipi_handle_task(unsigned long data)
                 pr_err( "[ELUS] did not find payload with id %u", (unsigned int)current_ipi_counter );
                 continue;
             }
-            pr_info("[ELUS] Got data via %s, counter:%u parameter_id:%u len:%u",
+            pr_debug("[ELUS] Got data via %s, counter:%u parameter_id:%u len:%u",
 				via_str,
 				(unsigned int)current_ipi_counter,
 				(unsigned int)header->parameter_id,
@@ -230,7 +230,7 @@ void elliptic_data_io_ipi_handler(
     int id, /*void *prdata,*/ void *data, unsigned int len)
 {
     unsigned int ret;
-    pr_info("[ELUS] %s() enter", __func__);
+    pr_debug("[ELUS] %s() enter", __func__);
     ret = kfifo_in(&elliptic_ipi_handler_data.fifo, data, sizeof(elliptic_ipi_scp_to_host_message_t));
     if (ret != sizeof(elliptic_ipi_scp_to_host_message_t)) {
         pr_err("[ELUS] IPI handler push message error, size=%u", ret);
@@ -317,7 +317,7 @@ int32_t elliptic_data_io_write(uint32_t message_id, const char *data,
 
 int elliptic_data_io_cleanup(void)
 {
-	pr_info("[ELUS] Unimplemented");
+	pr_debug("[ELUS] Unimplemented");
     tasklet_kill(&elliptic_ipi_handler_data.handle_task);
     kfifo_free(&elliptic_ipi_handler_data.fifo);
 	return 0;

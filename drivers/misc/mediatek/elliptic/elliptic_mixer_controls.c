@@ -831,7 +831,7 @@ int elliptic_system_configuration_param_put(
 	struct elliptic_system_configuration_parameter param;
 	struct timespec tv;
 	int32_t myres=0;
-	pr_err("[ELUS] %s: enter\n", __func__);
+	pr_debug("[ELUS] %s: enter\n", __func__);
 
 	if (mc->reg != ELLIPTIC_SYSTEM_CONFIGURATION)
 		return -EINVAL;
@@ -903,7 +903,7 @@ int elliptic_system_configuration_param_put(
 		param.type = ESCPT_OPERATION_MODE;
 		param.operation_mode =
 			elliptic_system_configuration_cache.operation_mode;
-		pr_err("[ELUS] %s: OPERATION_MODE:%d\n", __func__,param.operation_mode);
+		pr_debug("[ELUS] %s: OPERATION_MODE:%d\n", __func__,param.operation_mode);
 		break;
 
 	case ELLIPTIC_SYSTEM_CONFIGURATION_OPERATION_MODE_FLAGS:
@@ -1000,7 +1000,7 @@ int elliptic_system_configuration_param_put(
 	}
 	myres=elliptic_data_write(ELLIPTIC_ULTRASOUND_SET_PARAMS,
 				  (const char *)&param, sizeof(param));
-	pr_err("[ELUS] %s: -exit\n", __func__);
+	pr_debug("[ELUS] %s: -exit\n", __func__);
 	return myres;
 }
 
@@ -1334,7 +1334,7 @@ unsigned int elliptic_add_platform_controls(void *platform)
 	const unsigned int num_controls =
 		ARRAY_SIZE(ultrasound_filter_mixer_controls);
 
-	pr_err("[ELUS] enter init control");
+	pr_debug("[ELUS] enter init control");
 
 	if (platform != NULL) {
 		snd_soc_add_component_controls(
