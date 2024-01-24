@@ -12,7 +12,7 @@ obj-y += mt6853_dbg_fs.o
 obj-y += mt6853_dbg_lpm_fs.o
 obj-y += mt6853_dbg_lpm_rc_fs.o
 obj-y += mt6853_dbg_spm_fs.o
-obj-y += mt6853_logger.o
+#obj-y += mt6853_logger.o
 obj-y += mt6853_lpm_trace_event.o
 
 obj-y += mt6853_cpupm_dbg.o

@@ -12,7 +12,7 @@ obj-y += mt6877_dbg_fs.o
 obj-y += mt6877_dbg_lpm_fs.o
 obj-y += mt6877_dbg_lpm_rc_fs.o
 obj-y += mt6877_dbg_spm_fs.o
-obj-y += mt6877_logger.o
+#obj-y += mt6877_logger.o
 obj-y += mt6877_lpm_trace_event.o
 
 obj-y += mt6877_cpupm_dbg.o

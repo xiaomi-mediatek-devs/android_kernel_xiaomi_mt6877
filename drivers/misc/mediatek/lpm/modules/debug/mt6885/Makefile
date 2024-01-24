@@ -11,7 +11,7 @@ obj-y += mt6885_dbg.o
 obj-y += mt6885_dbg_lpm_fs.o
 obj-y += mt6885_dbg_lpm_rc_fs.o
 obj-y += mt6885_dbg_spm_fs.o
-obj-y += mt6885_logger.o
+#obj-y += mt6885_logger.o
 obj-y += mt6885_lpm_trace_event.o
 
 obj-y += mt6885_cpupm_dbg.o
