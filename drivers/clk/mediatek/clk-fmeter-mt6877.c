@@ -303,7 +303,7 @@ unsigned int mt_get_ckgen_freq(unsigned int ID)
 
 	fmeter_lock(flags);
 	if (check_pdn(topck_base, CKGEN, ID)) {
-		pr_notice("ID-%d: MUX PDN, return 0.\n", ID);
+		pr_debug("ID-%d: MUX PDN, return 0.\n", ID);
 		fmeter_unlock(flags);
 		return 0;
 	}
@@ -366,7 +366,7 @@ unsigned int mt_get_ckgen_freq(unsigned int ID)
 	if (i > 30)
 		return 0;
 	if ((output * 4) < 1000) {
-		pr_notice("%s(%d): CLK_DBG_CFG = 0x%x, CLK_MISC_CFG_0 = 0x%x, CLK26CALI_0 = 0x%x, CLK26CALI_1 = 0x%x\n",
+		pr_debug("%s(%d): CLK_DBG_CFG = 0x%x, CLK_MISC_CFG_0 = 0x%x, CLK26CALI_0 = 0x%x, CLK26CALI_1 = 0x%x\n",
 			__func__,
 			ID,
 			clk_readl(CLK_DBG_CFG),
@@ -445,13 +445,13 @@ unsigned int mt_get_abist_freq(unsigned int ID)
 	if (i > 30)
 		return 0;
 	if ((output * 4) < 1000) {
-		pr_notice("%s: CLK_DBG_CFG = 0x%x, CLK_MISC_CFG_0 = 0x%x, CLK26CALI_0 = 0x%x, CLK26CALI_1 = 0x%x\n",
+		pr_debug("%s: CLK_DBG_CFG = 0x%x, CLK_MISC_CFG_0 = 0x%x, CLK26CALI_0 = 0x%x, CLK26CALI_1 = 0x%x\n",
 			__func__,
 			clk_readl(CLK_DBG_CFG),
 			clk_readl(CLK_MISC_CFG_0),
 			clk_readl(CLK26CALI_0),
 			clk_readl(CLK26CALI_1));
-		pr_notice("clk_div = 0x%x, post_div = 0x%x\n", clk_div, post_div);
+		pr_debug("clk_div = 0x%x, post_div = 0x%x\n", clk_div, post_div);
 	}
 	return (output * 4);
 }
@@ -464,7 +464,7 @@ unsigned int mt_get_abist2_freq(unsigned int ID)
 
 	fmeter_lock(flags);
 	if (check_pdn(topck_base, ABIST_2, ID)) {
-		pr_notice("ID-%d: MUX PDN, return 0.\n", ID);
+		pr_debug("ID-%d: MUX PDN, return 0.\n", ID);
 		fmeter_unlock(flags);
 		return 0;
 	}
@@ -540,7 +540,7 @@ unsigned int mt_get_subsys_freq(unsigned int ID)
 
 	fmeter_lock(flags);
 	if (check_pdn(spm_base, SUBSYS, ID)) {
-		pr_notice("ID-%d: PDN, return 0.\n", ID);
+		pr_debug("ID-%d: PDN, return 0.\n", ID);
 		fmeter_unlock(flags);
 		return 0;
 	}
@@ -579,7 +579,7 @@ unsigned int mt_get_subsys_freq(unsigned int ID)
 		udelay(10);
 		i++;
 		if (i > 30) {
-			pr_notice("[%d]con0: 0x%x, con1: 0x%x\n",
+			pr_debug("[%d]con0: 0x%x, con1: 0x%x\n",
 				ID, clk_readl(con0), clk_readl(con1));
 			break;
 		}
@@ -589,7 +589,7 @@ unsigned int mt_get_subsys_freq(unsigned int ID)
 	output = ((temp * 26000)) / 1024; // Khz
 
 	clk_writel(con0, 0x8000);
-	pr_notice("[%d(%d)]con0: 0x%x, con1: 0x%x\n",
+	pr_debug("[%d(%d)]con0: 0x%x, con1: 0x%x\n",
 				ID, id, clk_readl(con0), clk_readl(con1));
 	fmeter_unlock(flags);
 
