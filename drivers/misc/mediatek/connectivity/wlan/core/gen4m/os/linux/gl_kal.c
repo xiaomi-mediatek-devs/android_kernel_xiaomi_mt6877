@@ -9887,6 +9887,7 @@ void kalUpdateCompHdlrRec(IN struct ADAPTER *prAdapter,
 					% OID_HDLR_REC_NUM;
 }
 
+#if (BUILD_QA_DBG == 1)
 void kalPrintUTC(char *msg_buf, int msg_buf_size)
 {
 	int ret = 0;
@@ -9969,7 +9970,7 @@ void kalPrintLog(const char *fmt, ...)
 
 	va_end(args);
 }
-
+#endif
 
 #if (CFG_SUPPORT_POWER_THROTTLING == 1)
 void kalPwrLevelHdlrRegister(IN struct ADAPTER *prAdapter,
