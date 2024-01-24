@@ -167,7 +167,7 @@ static const unsigned char *qcm_sm_state_str[] = {
 };
 
 static int product_name = PISSARRO;
-static int log_level = 1;
+static int log_level = 0;
 
 static bool disable_slave_qc3_18 = true;
 module_param_named(disable_slave_qc3_18, disable_slave_qc3_18, bool, 0600);

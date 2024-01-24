@@ -33,7 +33,7 @@ enum product_name {
 	RUBYPLUS,
 };
 
-static int log_level = 2;
+static int log_level = 0;
 static int product_name = UNKNOW;
 
 #define bq_err(fmt, ...)					\

@@ -202,7 +202,7 @@ static const unsigned char *pm_str[] = {
 	"PD_PM_STATE_EXIT",
 };
 
-static int log_level = 1;
+static int log_level = 0;
 static int product_name = UNKNOW;
 
 static int bypass_entry_fcc_pissarro = 4300;

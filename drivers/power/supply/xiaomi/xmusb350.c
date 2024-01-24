@@ -199,7 +199,7 @@ extern void Charger_Detect_Release(void);
 
 static int xmusb350_psy_chg_type_changed(struct xmusb350_charger *chip);
 static void xmusb350_set_usbsw_state(struct xmusb350_charger *chip, int state);
-static int log_level = 1;
+static int log_level = 0;
 static uint32_t *file_data;
 static uint32_t *file_date_w;
 static uint32_t file_size;

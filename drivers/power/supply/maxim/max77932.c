@@ -85,7 +85,7 @@ enum max77932_ovp {
 };
 
 enum product_name product_name = UNKNOW;
-static int log_level = 2;
+static int log_level = 0;
 
 #define max_err(fmt, ...)							\
 do {										\

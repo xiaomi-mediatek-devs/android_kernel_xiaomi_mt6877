@@ -59,7 +59,7 @@ static struct regmap_config sc8561_regmap_config = {
 	.max_register  = 0xFF,
 };
 
-static int log_level = 2;
+static int log_level = 0;
 static int product_name = UNKNOW;
 
 #define xmc_err(fmt, ...)					\

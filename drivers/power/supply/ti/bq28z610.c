@@ -210,7 +210,7 @@ struct bq_fg_chip {
 };
 
 static int product_name = UNKNOW;
-static int log_level = 1;
+static int log_level = 0;
 
 #define fg_err(fmt, ...)					\
 do {								\

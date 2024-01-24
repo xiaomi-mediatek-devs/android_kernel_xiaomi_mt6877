@@ -241,7 +241,7 @@ static const struct mt6360_chg_platform_data def_platform_data = {
 };
 
 static int product_name = UNKNOW;
-static int log_level = 2;
+static int log_level = 0;
 extern int get_pd_usb_connected(void);
 
 #define pmu_err(fmt, ...)						\
