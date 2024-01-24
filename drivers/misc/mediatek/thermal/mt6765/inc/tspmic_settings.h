@@ -25,7 +25,7 @@
 #define y_pmic_repeat_times	1
 
 #define mtktspmic_info(fmt, args...)   \
-pr_notice("[Thermal/TZ/PMIC] " fmt, ##args)
+pr_debug("[Thermal/TZ/PMIC] " fmt, ##args)
 
 
 #define mtktspmic_dprintk(fmt, args...)   \
