@@ -13,6 +13,7 @@ ifeq ($(os),)
 os=linux
 endif
 
+ccflags-y += -Wno-unused-variable
 ccflags-y += -Wno-unused-value
 ccflags-y += -Wno-unused-result
 ccflags-y += -Wno-format
