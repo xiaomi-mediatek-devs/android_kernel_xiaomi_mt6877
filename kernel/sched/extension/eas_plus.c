@@ -866,9 +866,11 @@ done:
 
 #ifdef CONFIG_MTK_SCHED_BIG_TASK_MIGRATE
 DEFINE_PER_CPU(struct task_rotate_work, task_rotate_works);
+#ifdef CONFIG_MTK_EAS_CTRL
 struct task_rotate_reset_uclamp_work task_rotate_reset_uclamp_works;
-bool big_task_rotation_enable;
 bool set_uclamp;
+#endif
+bool big_task_rotation_enable;
 
 unsigned int scale_to_percent(unsigned int value)
 {
@@ -914,6 +916,7 @@ static void task_rotate_work_func(struct work_struct *work)
 			task_cpu(wr->dst_task), task_cpu(wr->src_task));
 
 	if (ret == 0) {
+#ifdef CONFIG_MTK_EAS_CTRL
 		update_eas_uclamp_min(EAS_UCLAMP_KIR_BIG_TASK, CGROUP_TA,
 				scale_to_percent(SCHED_CAPACITY_SCALE));
 		set_uclamp = true;
@@ -921,6 +924,12 @@ static void task_rotate_work_func(struct work_struct *work)
 						wr->src_task->pid,
 						wr->dst_task->pid,
 						true, set_uclamp);
+#else
+		trace_sched_big_task_rotation(wr->src_cpu, wr->dst_cpu,
+						wr->src_task->pid,
+						wr->dst_task->pid,
+						true, false);
+#endif
 	}
 
 	put_task_struct(wr->src_task);
@@ -937,12 +946,14 @@ static void task_rotate_work_func(struct work_struct *work)
 	local_irq_enable();
 }
 
+#ifdef CONFIG_MTK_EAS_CTRL
 static void task_rotate_reset_uclamp_work_func(struct work_struct *work)
 {
 	update_eas_uclamp_min(EAS_UCLAMP_KIR_BIG_TASK, CGROUP_TA, 0);
 	set_uclamp = false;
 	trace_sched_big_task_rotation_reset(set_uclamp);
 }
+#endif
 
 void task_rotate_work_init(void)
 {
@@ -954,8 +965,10 @@ void task_rotate_work_init(void)
 		INIT_WORK(&wr->w, task_rotate_work_func);
 	}
 
+#ifdef CONFIG_MTK_EAS_CTRL
 	INIT_WORK(&task_rotate_reset_uclamp_works.w,
 			task_rotate_reset_uclamp_work_func);
+#endif
 }
 #endif /* CONFIG_MTK_SCHED_BIG_TASK_MIGRATE */
 
