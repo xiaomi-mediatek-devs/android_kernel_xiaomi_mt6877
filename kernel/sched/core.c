@@ -1456,7 +1456,6 @@ bool uclamp_latency_sensitive(struct task_struct *p)
 static inline void init_uclamp(void) { }
 #endif /* CONFIG_UCLAMP_TASK */
 
-#ifndef CONFIG_SCHED_WALT
 int dequeue_idle_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -1484,7 +1483,6 @@ static void sched_queuedeq_task(int type, struct rq *rq, struct task_struct *p, 
 		per_cpu(cpufreq_idle_cpu, cpu) = 0;
 	spin_unlock(&per_cpu(cpufreq_idle_cpu_lock, cpu));
 }
-#endif /* CONFIG_SCHED_WALT */
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -1497,9 +1495,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_inc(rq, p);
-#ifndef CONFIG_SCHED_WALT
 	sched_queuedeq_task(1, rq, p, flags);
-#endif
 	p->sched_class->enqueue_task(rq, p, flags);
 
 	/* update last_enqueued_ts for big task rotation */
@@ -1517,9 +1513,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_dec(rq, p);
-#ifndef CONFIG_SCHED_WALT
 	sched_queuedeq_task(-1, rq, p, flags);
-#endif
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -2620,14 +2614,12 @@ void sched_ttwu_pending(void)
 	if (!llist)
 		return;
 
-#ifndef CONFIG_SCHED_WALT
 	/*
 	 * rq::ttwu_pending racy indication of out-standing wakeups.
 	 * Races such that false-negatives are possible, since they
 	 * are shorter lived that false-positives would be.
 	 */
 	WRITE_ONCE(rq->ttwu_pending, 0);
-#endif
 
 	rq_lock_irqsave(rq, &rf);
 	update_rq_clock(rq);
@@ -2709,9 +2701,7 @@ static void __ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags
 
 	p->sched_remote_wakeup = !!(wake_flags & WF_MIGRATED);
 
-#ifndef CONFIG_SCHED_WALT
 	WRITE_ONCE(rq->ttwu_pending, 1);
-#endif
 	if (llist_add(&p->wake_entry, &cpu_rq(cpu)->wake_list)) {
 		if (!set_nr_if_polling(rq->idle))
 			smp_send_reschedule(cpu);
@@ -5246,11 +5236,7 @@ int idle_cpu(int cpu)
 		return 0;
 
 #ifdef CONFIG_SMP
-#ifdef CONFIG_SCHED_WALT
-	if (!llist_empty(&rq->wake_list))
-#else
 	if (rq->ttwu_pending)
-#endif
 		return 0;
 #endif
 
@@ -7384,9 +7370,7 @@ void __init sched_init(void)
 		hrtick_rq_init(rq);
 		atomic_set(&rq->nr_iowait, 0);
 
-#ifndef CONFIG_SCHED_WALT
 		spin_lock_init(&per_cpu(cpufreq_idle_cpu_lock, i));
-#endif
 	}
 
 	set_load_weight(&init_task, false);
