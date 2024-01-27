@@ -1660,6 +1660,8 @@ static struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
 	dequeue_task(rq, p, DEQUEUE_NOCLOCK);
 	rq_unpin_lock(rq, rf);
 	double_lock_balance(rq, cpu_rq(new_cpu));
+	if (!(rq->clock_update_flags & RQCF_UPDATED))
+		update_rq_clock(rq);
 	set_task_cpu(p, new_cpu);
 	double_rq_unlock(cpu_rq(new_cpu), rq);
 
