@@ -7,6 +7,8 @@
 #include <linux/rcupdate.h>
 #include "tuning.h"
 
+static DEFINE_MUTEX(boost_mutex);
+
 #ifdef CONFIG_MTK_SCHED_CPU_PREFER
 int sched_set_cpuprefer(pid_t pid, unsigned int prefer_type)
 {
@@ -56,6 +58,39 @@ int get_task_group_path(struct task_group *tg, char *buf, size_t buf_len)
 	return cgroup_path(tg->css.cgroup, buf, buf_len);
 }
 
+static void boost_kick_cpus(void)
+{
+	int i;
+	struct cpumask kick_mask;
+	u32 nr_running;
+
+	if (sched_boost_type == SCHED_NO_BOOST)
+		return;
+
+	mutex_lock(&boost_mutex);
+
+	cpumask_andnot(&kick_mask, cpu_online_mask, cpu_isolated_mask);
+
+	for_each_cpu(i, &kick_mask) {
+		/*
+		 * kick only "small" cluster
+		 */
+		if (!is_max_capacity_cpu(i)) {
+			nr_running = READ_ONCE(cpu_rq(i)->nr_running);
+
+			/*
+			 * make sense to interrupt CPU if its run-queue
+			 * has something running in order to check for
+			 * migration afterwards, otherwise skip it.
+			 */
+			if (nr_running >= 1)
+				smp_send_reschedule(i);
+		}
+	}
+
+	mutex_unlock(&boost_mutex);
+}
+
 /*
  * set sched boost type
  * @type: reference sched boost type
@@ -63,6 +98,8 @@ int get_task_group_path(struct task_group *tg, char *buf, size_t buf_len)
  */
 int set_sched_boost_type(int type)
 {
+	int old_type = sched_boost_type;
+
 	if (type < SCHED_NO_BOOST || type > SCHED_ALL_BOOST) {
 		pr_info("Sched boost type should between %d-%d but your valuse is %d\n",
 		       SCHED_NO_BOOST, SCHED_ALL_BOOST, type);
@@ -70,6 +107,13 @@ int set_sched_boost_type(int type)
 	}
 
 	sched_boost_type = type;
+
+	/*
+	 * Kick low capacity CPUs to force immediate migration of tasks
+	 * onto high capcity CPUs.
+	 */
+	if (old_type != sched_boost_type)
+		boost_kick_cpus();
 
 	return sched_boost_type;
 }
@@ -98,18 +142,15 @@ int cpu_prefer(struct task_struct *task)
 	int cpu_prefer = task_orig_cpu_prefer(task);
 	int cs_prefer = task_cs_cpu_perfer(task);
 
+	if (sched_boost_type == SCHED_ALL_BOOST)
+		return SCHED_PREFER_BIG;
+
 	if (cpu_prefer == SCHED_PREFER_LITTLE &&
 		uclamp_boosted(task))
 		cpu_prefer = SCHED_PREFER_NONE;
 
 	if (cs_prefer > SCHED_PREFER_NONE && cs_prefer < SCHED_PREFER_END)
 		cpu_prefer = cs_prefer;
-
-	switch (sched_boost_type) {
-	case SCHED_ALL_BOOST:
-		cpu_prefer = SCHED_PREFER_BIG;
-		break;
-	}
 
 	return cpu_prefer;
 }
