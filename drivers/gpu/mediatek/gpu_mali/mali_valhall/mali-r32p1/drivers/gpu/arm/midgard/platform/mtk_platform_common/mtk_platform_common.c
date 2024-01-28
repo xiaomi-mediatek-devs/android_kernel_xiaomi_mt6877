@@ -24,6 +24,10 @@
 #include <linux/proc_fs.h>
 #endif
 
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+static int last_commited_idx = 0;
+#endif
+
 static bool mfg_powered;
 static DEFINE_MUTEX(mfg_pm_lock);
 static struct kbase_device *mali_kbdev;
@@ -55,23 +59,51 @@ void mtk_common_pm_mfg_idle(void)
 	mutex_unlock(&mfg_pm_lock);
 }
 
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+int mtk_common_last_commited_idx(void)
+{
+	return last_commited_idx;
+}
+#endif
+
 int mtk_common_gpufreq_commit(int opp_idx)
 {
 	int ret = -1;
 
 	mutex_lock(&mfg_pm_lock);
-	if (opp_idx >= 0 && mtk_common_pm_is_mfg_active()) {
-    #if defined(CONFIG_MACH_MT6768) || defined(CONFIG_MACH_MT6785)
+	if (opp_idx >= 0 && opp_idx < mt_gpufreq_get_dvfs_table_num()) {
+		if (mtk_common_pm_is_mfg_active()) {
+#if defined(CONFIG_MACH_MT6768) || defined(CONFIG_MACH_MT6785)
 		ret = mt_gpufreq_target(opp_idx, false);
-	#else
+#else
 		ret = mt_gpufreq_target(opp_idx, KIR_POLICY);
-	#endif
+#endif
+		}
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+	/* need power on GPU to adujust freq then power off */
+		else {
+			mt_gpufreq_power_control(POWER_ON, CG_ON, MTCMOS_ON, BUCK_ON);
+#if defined(CONFIG_MACH_MT6768) || defined(CONFIG_MACH_MT6785)
+			ret = mt_gpufreq_target(opp_idx, false);
+#else
+			ret = mt_gpufreq_target(opp_idx, KIR_POLICY);
+#endif
+			mt_gpufreq_power_control(POWER_OFF, CG_OFF, MTCMOS_OFF, BUCK_OFF);
+		}
+#endif
 	}
 	mutex_unlock(&mfg_pm_lock);
+
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+	if (ret == 0) {
+		last_commited_idx = opp_idx;
+	}
+#endif
 
 	return ret;
 }
 
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 int mtk_common_ged_dvfs_get_last_commit_idx(void)
 {
 #if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
@@ -80,6 +112,7 @@ int mtk_common_ged_dvfs_get_last_commit_idx(void)
 	return -1;
 #endif
 }
+#endif
 
 #if IS_ENABLED(CONFIG_PROC_FS)
 static int mtk_common_gpu_utilization_show(struct seq_file *m, void *v)
@@ -141,6 +174,7 @@ int mtk_common_device_init(struct kbase_device *kbdev)
 	}
 #endif
 
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 #if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
 #if IS_ENABLED(GED_ENABLE_DVFS_LOADING_MODE)
 	ged_dvfs_cal_gpu_utilization_ex_fp = mtk_common_cal_gpu_utilization_ex;
@@ -148,6 +182,7 @@ int mtk_common_device_init(struct kbase_device *kbdev)
 	ged_dvfs_cal_gpu_utilization_fp = mtk_common_cal_gpu_utilization;
 #endif
 	ged_dvfs_gpu_freq_commit_fp = mtk_common_ged_dvfs_commit;
+#endif
 #endif
 
 	mtk_mfg_counter_init();

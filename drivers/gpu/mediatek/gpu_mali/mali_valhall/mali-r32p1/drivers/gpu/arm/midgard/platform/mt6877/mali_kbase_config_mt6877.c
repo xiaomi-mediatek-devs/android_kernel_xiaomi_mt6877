@@ -44,7 +44,9 @@
 #define mali_pr_debug(fmt, args...)		pr_debug(MALI_TAG"[DEBUG]"fmt, ##args)
 
 DEFINE_MUTEX(g_mfg_lock);
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 static int g_curFreqID;
+#endif
 
 enum gpu_dvfs_status_step {
 	GPU_DVFS_STATUS_STEP_1 = 0x1,
@@ -116,7 +118,11 @@ static int pm_callback_power_on_nolock(struct kbase_device *kbdev)
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_3);
 
 	/* resume frequency */
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+	mtk_common_gpufreq_commit(mtk_common_last_commited_idx());
+#else
 	mtk_common_gpufreq_commit(g_curFreqID);
+#endif
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_4);
 
@@ -155,8 +161,10 @@ static void pm_callback_power_off_nolock(struct kbase_device *kbdev)
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_8);
 
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 	/* suspend frequency */
 	g_curFreqID = mtk_common_ged_dvfs_get_last_commit_idx();
+#endif
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_9);
 
