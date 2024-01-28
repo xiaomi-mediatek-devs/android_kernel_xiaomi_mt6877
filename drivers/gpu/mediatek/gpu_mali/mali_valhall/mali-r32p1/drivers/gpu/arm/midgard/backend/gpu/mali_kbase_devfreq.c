@@ -29,6 +29,9 @@
 #if IS_ENABLED(CONFIG_DEVFREQ_THERMAL)
 #include <linux/devfreq_cooling.h>
 #endif
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+#include <platform/mtk_platform_common/mtk_platform_devfreq.h>
+#endif
 
 #include <linux/version.h>
 #include <linux/pm_opp.h>
@@ -629,6 +632,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 	int err;
 	unsigned int i;
 
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 	if (kbdev->nr_clocks == 0) {
 		dev_err(kbdev->dev, "Clock not available for devfreq\n");
 		return -ENODEV;
@@ -642,6 +646,7 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 			kbdev->current_freqs[i] = 0;
 	}
 	kbdev->current_nominal_freq = kbdev->current_freqs[0];
+#endif
 
 	dp = &kbdev->devfreq_profile;
 
@@ -651,6 +656,11 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 	dp->get_dev_status = kbase_devfreq_status;
 	dp->get_cur_freq = kbase_devfreq_cur_freq;
 	dp->exit = kbase_devfreq_exit;
+
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+	mtk_mali_devfreq_update_profile(dp);
+	mtk_devfreq_update_voltage();
+#endif
 
 	if (kbase_devfreq_init_freq_table(kbdev, dp))
 		return -EFAULT;

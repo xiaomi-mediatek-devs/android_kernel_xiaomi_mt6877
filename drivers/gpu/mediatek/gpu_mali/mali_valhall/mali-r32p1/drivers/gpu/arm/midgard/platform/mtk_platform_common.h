@@ -23,8 +23,15 @@ bool mtk_common_pm_is_mfg_active(void);
 void mtk_common_pm_mfg_active(void);
 void mtk_common_pm_mfg_idle(void);
 
+#if IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
+int mtk_common_last_commited_idx(void);
+#endif
+
 int mtk_common_gpufreq_commit(int opp_idx);
+
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 int mtk_common_ged_dvfs_get_last_commit_idx(void);
+#endif
 
 int mtk_common_device_init(struct kbase_device *kbdev);
 void mtk_common_device_term(struct kbase_device *kbdev);
