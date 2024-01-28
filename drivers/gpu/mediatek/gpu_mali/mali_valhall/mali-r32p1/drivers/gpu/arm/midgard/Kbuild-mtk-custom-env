@@ -19,6 +19,11 @@ endif
 
 CONFIG_MALI_DEBUG := y
 
+ifneq ($(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT),y)
+CONFIG_MALI_DEVFREQ := y
+CONFIG_MALI_MTK_DEVFREQ := y
+endif
+
 ccflags-y += -I$(srctree)/include
 ccflags-y += -I$(srctree)/drivers/staging/android
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
@@ -37,7 +42,12 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 ccflags-$(CONFIG_DEBUG_FS) += -DCONFIG_DEBUG_FS
 ccflags-y += -DCONFIG_PROC_FS
 
-ccflags-y += -DCONFIG_MALI_MIDGARD_DVFS
+ifneq ($(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT),y)
+ccflags-y += -DCONFIG_MALI_DEVFREQ
+ccflags-y += -DCONFIG_MALI_MTK_DEVFREQ
+endif
+
+ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DCONFIG_MALI_MIDGARD_DVFS
 ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DCONFIG_MTK_GPU_COMMON_DVFS
 
 # Enable by specific Family-ID

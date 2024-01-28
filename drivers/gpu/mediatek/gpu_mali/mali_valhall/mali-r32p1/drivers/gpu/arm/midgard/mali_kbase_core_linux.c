@@ -5263,7 +5263,7 @@ int kbase_backend_devfreq_init(struct kbase_device *kbdev)
 	int err = kbase_devfreq_init(kbdev);
 
 	if (err)
-		dev_err(kbdev->dev, "Continuing without devfreq\n");
+		dev_err(kbdev->dev, "Continuing without devfreq, error: %d\n", err);
 #endif /* CONFIG_MALI_DEVFREQ */
 	return 0;
 }
