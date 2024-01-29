@@ -3386,6 +3386,8 @@
 	mali: mali@13000000 {
 		compatible = "mediatek,mali", "arm,mali-valhall";
 		reg = <0 0x13000000 0 0x4000>;
+		upthreshold = <40>;
+		downdifferential = <30>;
 		interrupts =
 			<GIC_SPI 453 IRQ_TYPE_LEVEL_HIGH>,
 			<GIC_SPI 454 IRQ_TYPE_LEVEL_HIGH>,
