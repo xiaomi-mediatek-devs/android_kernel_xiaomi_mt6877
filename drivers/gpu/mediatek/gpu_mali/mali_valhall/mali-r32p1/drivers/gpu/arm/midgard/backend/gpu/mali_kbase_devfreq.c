@@ -630,9 +630,9 @@ int kbase_devfreq_init(struct kbase_device *kbdev)
 {
 	struct devfreq_dev_profile *dp;
 	int err;
+#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 	unsigned int i;
 
-#if !IS_ENABLED(CONFIG_MALI_MTK_DEVFREQ)
 	if (kbdev->nr_clocks == 0) {
 		dev_err(kbdev->dev, "Clock not available for devfreq\n");
 		return -ENODEV;
