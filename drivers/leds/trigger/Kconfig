@@ -61,6 +61,15 @@ config LEDS_TRIGGER_BACKLIGHT
 
 	  If unsure, say N.
 
+config LEDS_TRIGGER_BACKLIGHT_DRM
+	tristate "LED backlight Trigger using DRM notifier"
+	depends on MI_DISP_NOTIFIER
+	help
+	  This allows LEDs to be controlled as a backlight device: they
+	  turn off and on when the display is blanked and unblanked.
+
+	  If unsure, say N.
+
 config LEDS_TRIGGER_CPU
 	bool "LED CPU Trigger"
 	help
