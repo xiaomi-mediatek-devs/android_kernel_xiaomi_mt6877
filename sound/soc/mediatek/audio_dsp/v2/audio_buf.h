@@ -69,14 +69,20 @@ struct audio_buffer {
 	int period_count; /* preoid size with this hw buffer */
 };
 
+#if IS_ENABLED(CONFIG_MTK_AUDIODSP_LEGACY)
+#define audio_hw_buffer_type int
+#else
+#define audio_hw_buffer_type char
+#endif
+
 struct audio_hw_buffer {
 	struct audio_buffer aud_buffer;
-	char hw_buffer;
-	char audio_memiftype;   /*DL 1,2,3 */
-	char irq_num; /* irq with this hw buffer */
-	char memory_type; /* sram,dram */
+	audio_hw_buffer_type hw_buffer;
+	audio_hw_buffer_type audio_memiftype;   /*DL 1,2,3 */
+	audio_hw_buffer_type irq_num; /* irq with this hw buffer */
+	audio_hw_buffer_type memory_type; /* sram,dram */
 	int counter;
-	char ignore_irq;
+	audio_hw_buffer_type ignore_irq;
 };
 
 struct audiohw_buffer_ops {

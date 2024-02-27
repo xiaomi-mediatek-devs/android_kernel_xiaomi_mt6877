@@ -8,3 +8,12 @@ config MTK_AUDIODSP_SUPPORT
 	  Set Y to enable this feature.
 	  If unsure,
 	  Set N to stay with legancy feature.
+
+config MTK_AUDIODSP_LEGACY
+	bool "Compat with legacy audio firmware/blobs"
+	default n
+	depends on MTK_AUDIODSP_SUPPORT
+	help
+	  Enable this option if your device uses older audio firmware/blobs.
+
+	  If unsure, say N.
