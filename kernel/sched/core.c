@@ -1100,7 +1100,7 @@ uclamp_update_active(struct task_struct *p)
 }
 
 #ifdef CONFIG_UCLAMP_TASK_GROUP
-static inline void
+inline void
 uclamp_update_active_tasks(struct cgroup_subsys_state *css)
 {
 	struct css_task_iter it;
