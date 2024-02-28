@@ -11,9 +11,12 @@
 #include <linux/cpu.h>
 #include <linux/cpuidle.h>
 #include <linux/mutex.h>
+#include <linux/module.h>
 #include <linux/pm_qos.h>
 
 #include "cpuidle.h"
+
+char param_governor[CPUIDLE_NAME_LEN];
 
 LIST_HEAD(cpuidle_governors);
 struct cpuidle_governor *cpuidle_curr_governor;
@@ -88,7 +91,10 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
 		ret = 0;
 		list_add_tail(&gov->governor_list, &cpuidle_governors);
 		if (!cpuidle_curr_governor ||
-		    cpuidle_curr_governor->rating < gov->rating)
+		    !strncasecmp(param_governor, gov->name, CPUIDLE_NAME_LEN) ||
+		    (cpuidle_curr_governor->rating < gov->rating &&
+		     strncasecmp(param_governor, cpuidle_curr_governor->name,
+				 CPUIDLE_NAME_LEN)))
 			cpuidle_switch_governor(gov);
 	}
 	mutex_unlock(&cpuidle_lock);
@@ -101,11 +107,14 @@ EXPORT_SYMBOL_GPL(cpuidle_register_governor);
  * cpuidle_governor_latency_req - Compute a latency constraint for CPU
  * @cpu: Target CPU
  */
-int cpuidle_governor_latency_req(unsigned int cpu)
+s64 cpuidle_governor_latency_req(unsigned int cpu)
 {
 	int global_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
 	struct device *device = get_cpu_device(cpu);
 	int device_req = dev_pm_qos_raw_read_value(device);
 
-	return device_req < global_req ? device_req : global_req;
+	if (device_req > global_req)
+		device_req = global_req;
+
+	return (s64)device_req * NSEC_PER_USEC;
 }

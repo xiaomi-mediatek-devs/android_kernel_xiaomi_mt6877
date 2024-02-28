@@ -24,7 +24,10 @@ enum {
 #define get_latency(drv, idx)\
 	((drv)->states[idx].exit_latency)
 #define get_disabled(drv, idx)\
-	((drv)->states[idx].disabled)
+	((drv)->states[idx].flags & CPUIDLE_FLAG_UNUSABLE)
+#define set_disabled(drv, state, en)\
+	((en) ? ((drv)->states[state].flags |= CPUIDLE_FLAG_UNUSABLE) : \
+		((drv)->states[state].flags &= ~CPUIDLE_FLAG_UNUSABLE))
 
 #define mtk_cpuidle_get_param(drv, state, param)                \
 ({                                                              \
@@ -45,7 +48,7 @@ do {                                                            \
 	else if (param == IDLE_PARAM_RES)                       \
 		get_residency(drv, state) = val;                \
 	else if (param == IDLE_PARAM_EN)                        \
-		get_disabled(drv, state) = !val ;               \
+		set_disabled(drv, state, val);               \
 } while (0)
 
 void mtk_cpuidle_set_stress_test(bool en);
