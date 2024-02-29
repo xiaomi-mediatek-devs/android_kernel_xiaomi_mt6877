@@ -66,6 +66,7 @@ obj-$(CONFIG_DRM_PANEL_SAMSUNG_S68FC01_VDO_AOD) += panel-samsung-s68fc01-vdo-aod
 obj-$(CONFIG_DRM_PANEL_TRULY_FT8756_VDO) += panel-truly-ft8756-vdo.o
 obj-$(CONFIG_DRM_PANEL_M16_42_0D_0A_DSC_VDO) += panel-m16-42-0d-0a-dsc-vdo.o
 obj-$(CONFIG_DRM_PANEL_M16_36_02_0B_DSC_VDO) += panel-m16-36-02-0b-dsc-vdo.o
+obj=$(CONFIG_DRM_PANEL_M16_45_02_0C_DSC_VDO) += panel-m16-45-02-0c-dsc-vdo.o
 obj-$(CONFIG_DRM_PANEL_TRULY_NT35595_CMD) += panel-truly-nt35595-cmd.o
 obj-$(CONFIG_DRM_PANEL_TRULY_NT35595_VDO) += panel-truly-nt35595-vdo.o
 obj-$(CONFIG_DRM_PANEL_TRULY_ILI9881H_VDO) += panel-truly-ili9881h-rt4801-vdo.o
