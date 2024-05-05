@@ -88,6 +88,21 @@
 			};
 		};
 	};
+	panel3@0 {
+		compatible = "m16_45_02_0c_dsc_vdo,lcm";
+		reg = <2>;
+		pm-enable-gpios = <&pio 107 0>;
+		reset-gpios = <&pio 40 0>;
+		vddi-gpios = <&pio 108 0>;
+		vibr30-supply = <&mt_pmic_vibr_ldo_reg>;
+		vdd-gpios = <&pio 167 0>;
+		mi,esd-err-irq-gpio = <&pio 9 0x2002>;
+		port {
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
 	ports {
 		port {
 			dsi_out: endpoint {

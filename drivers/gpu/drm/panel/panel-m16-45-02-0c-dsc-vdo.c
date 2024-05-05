@@ -37,6 +37,8 @@
 #include "../mediatek/mtk_corner_pattern/mtk_data_hw_roundedpattern.h"
 #endif
 
+//#define ENABLE_ELVSS_CONTROL
+
 #define REGFLAG_CMD			0xFFFA
 #define REGFLAG_DELAY			0xFFFC
 #define REGFLAG_UDELAY			0xFFFB
@@ -80,6 +82,7 @@
 #define DSC_RC_QUANT_INCR_LIMIT1    11
 #define DSC_RC_TGT_OFFSET_HI        3
 #define DSC_RC_TGT_OFFSET_LO        3
+
 static unsigned int rc_buf_thresh[14] = {896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
 static unsigned int range_min_qp[15] = {0, 0, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 7, 13};
 static unsigned int range_max_qp[15] = {4, 4, 5, 6, 7, 7, 7, 8, 9, 10, 11, 12, 13, 13, 15};
@@ -90,15 +93,16 @@ static int range_bpg_ofs[15] = {2, 0, 0, -2, -4, -6, -8, -8, -8, -10, -10, -12, 
 #define PHYSICAL_WIDTH              69552
 #define PHYSICAL_HEIGHT             154560
 
-#define FPS_INIT_INDEX 55
-#define GIR_INIT_INDEX1 56
-#define GIR_INIT_INDEX2 57
-#define GIR_INIT_INDEX3 60
+#define FPS_INIT_INDEX 25
+#define GIR_INIT_INDEX1 42
+#define GIR_INIT_INDEX2 43
+#define GIR_INIT_INDEX3 44
+#define GIR_CRC_INDEX 63
 #define AOD_TO_NORMAL_FPS_INDEX 0
 
-#define pr_fmt(fmt)	"panel_36_02_0b:" fmt
+#define pr_fmt(fmt)	"panel_45_02_0c:" fmt
 
-static const char *panel_name = "panel_name=dsi_m16_36_02_0b_dsc_vdo";
+static const char *panel_name = "panel_name=dsi_m16_45_02_0c_dsc_vdo";
 static char oled_wp_cmdline[18] = {0};
 
 static int lcm_panel_vibr30_regulator_init(struct device *dev);
@@ -178,37 +182,6 @@ static void lcm_dcs_write(struct lcm *ctx, const void *data, size_t len)
 		ctx->error = ret;
 	}
 }
-
-#ifdef PANEL_SUPPORT_READBACK
-static int lcm_dcs_read(struct lcm *ctx, u8 cmd, void *data, size_t len)
-{
-	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
-	ssize_t ret;
-
-	if (ctx->error < 0)
-		return 0;
-
-	ret = mipi_dsi_dcs_read(dsi, cmd, data, len);
-	if (ret < 0) {
-		dev_err(ctx->dev, "error %d reading dcs seq:(%#x)\n", ret, cmd);
-		ctx->error = ret;
-	}
-
-	return ret;
-}
-
-static void lcm_panel_get_data(struct lcm *ctx)
-{
-	u8 buffer[3] = {0};
-	static int ret;
-
-	if (ret == 0) {
-		ret = lcm_dcs_read(ctx, 0x0A, buffer, 1);
-		dev_info(ctx->dev, "return %d data(0x%08x) to dsi engine\n",
-			 ret, buffer[0] | (buffer[1] << 8));
-	}
-}
-#endif
 
 static void mi_disp_panel_ddic_send_cmd(struct LCM_setting_table *table, unsigned int count)
 {
@@ -311,142 +284,92 @@ static int lcm_panel_vibr30_disable(struct device *dev)
 }
 
 static struct LCM_setting_table init_setting_vdo[] = {
-	/* Source optimize */
-	{0xFF, 4,  {0xAA,0x55,0xA5,0x80} },
-	{0x6F, 1,  {0x17} },
-	{0xF4, 1,  {0x02} },
-	{0xFF, 4,  {0xAA,0x55,0xA5,0x81} },
-	{0x6F, 1,  {0x13} },
-	{0xF9, 1,  {0x01} },
-	/* aod setting */
-#ifdef CONFIG_MI_DISP_VDO_TO_CMD_AOD
-	{0x8D, 8, {0x00,0x00,0x04,0x37,0x00,0x00,0x05,0x9F} },
-#else
-	/* VDO mode setting */
-	{0x17,1,{0x03}},
-	{0x71,1,{0x00}},
-	{0x8D,8,{0x00,0x00,0x04,0x37,0x00,0x00,0x09,0x5F}},
-	{0xF0,5,{0x55,0xAA,0x52,0x08,0x00}},
-	{0xC0,2,{0x00,0x00}},
-	{0xF0,5,{0x55,0xAA,0x52,0x08,0x01}},
-	{0x6F,1,{0x02}},
-	{0xD2,3,{0x00,0x00,0x1F}},
-	{0x6F,1,{0x0B}},
-	{0xD2,1,{0x00}},
-	{0x6F,1,{0x01}},
-	{0xE4,2,{0x00,0x10}},
-	{0x6F,1,{0x0B}},
-	{0xE4,2,{0x00,0x10}},
-	{0x6F,1,{0x03}},
-	{0xE4,2,{0x20,0x00}},
-	{0x6F,1,{0x0D}},
-	{0xE4,2,{0x20,0x00}},
-	{0xF0,5,{0x55,0xAA,0x52,0x08,0x03}},
-	{0xC7,1,{0x00}},
-	{0x6F,1,{0x03}},
-	{0xBA,1,{0x00}},
-	{0xF0,5,{0x55,0xAA,0x52,0x08,0x04}},
-	{0x6F,1,{0x08}},
-	{0xB5,1,{0x00}},
-	/* video drop time */
-	{0xFF,4,{0xAA,0x55,0xA5,0x81}},
-	{0x6F,1,{0x3C}},
-	{0xF5,1,{0x81}},
-#endif
-	/* LVDET off */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x01} },
-	{0x6F, 1,  {0x03} },
-	{0xC7, 1,  {0x07} },
-	/* GOAtiming and ram resolution setting */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0xB9, 3,  {0x00,0x04,0x38} },
-	{0xBD, 2,  {0x09,0x60} },
-	{0x2A, 4,  {0x00,0x00,0x04,0x37} },
-	{0x2B, 4,  {0x00,0x00,0x09,0x5F} },
-	/* PPS table setting */
-	{0x90, 2,  {0x03,0x43} },
-	{0x91,18,  {0x89,0x28,0x00,0x14,0xC2,0x00,0x02,0x0E,0x01,0xE8,0x00,0x07,0x05,0x0E,0x05,0x16,0x10,0xF0} },
-	{0x93,18,  {0x89,0x28,0x00,0x14,0xC2,0x00,0x02,0x0E,0x01,0xE8,0x00,0x07,0x05,0x0E,0x05,0x16,0x10,0xF0} },
-	{0x95,18,  {0x89,0x28,0x00,0x14,0xC2,0x00,0x02,0x0E,0x01,0xE8,0x00,0x07,0x05,0x0E,0x05,0x16,0x10,0xF0} },
-	{0x97,18,  {0x89,0x28,0x00,0x14,0xC2,0x00,0x02,0x0E,0x01,0xE8,0x00,0x07,0x05,0x0E,0x05,0x16,0x10,0xF0} },
-
-	{0x53, 1,  {0x20} },
-	{0x3B, 4,  {0x00,0x0C,0x00,0x14} },  //VBP/VFP Video Mode
-	{0x35, 1,  {0x00} },
-	{0x51, 6,  {0x00,0x00,0x00,0x00,0x00,0x00} },
-
-	/* dimming setting */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0xB2, 1,  {0x08} },
-	{0x6F, 1,  {0x05} },
-	{0xB2, 2,  {0x04,0x04} },
-	/* fps 60hz */
-	{0x2F, 1,  {0x02} },
-	/* GIR off */
-	{0x5F, 1,  {0x01} },
-	{0x26, 1,  {0x00} },
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0x6F, 1,  {0x03} },
-	{0xC0, 1,  {0x20} },
-	/* esd config */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0xBE, 2,  {0x47,0x00} },
-	{0x6F, 1,  {0x05} },
-	{0xBE, 1,  {0x18} },
-	{0x6F, 1,  {0x0F} },
-	{0xBE, 2,  {0xFB,0xFB} },
-	/* round on */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x07} },
-	{0xC0, 1,  {0x87} },
-	/* ELVDD_ELVSS_Optimize */
-	{0xFF, 4,  {0xAA,0x55,0xA5,0x80} },
-	{0x6F, 1,  {0x31} },
-	{0xFC, 1,  {0x30} },
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x01} },
-	{0x6F, 1,  {0x0A} },
-	{0xE4, 1,  {0x90} },
-	/* LVDET Setting */
-	//adjust voltage medical value
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x05} },
-	{0xCB, 7,  {0x11,0x11,0x11,0x11,0x11,0x11,0x11} },
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x01} },
-	{0x6F, 1,  {0x05} },
-	{0xC7, 2,  {0x27,0x08} },
-	/* gamma code reload ng */
-	/* gamma code reload after 0x11 */
-	/* IC may reload failed, force reload gamma again */
-	{0xF0, 5,{0x55,0xAA,0x52,0x08,0x01} },
-	{0xE8,01,{0x30}},
-	{0xFF,04,{0xAA,0x55,0xA5,0x84}},
-	{0x6F,01,{0x21}},
-	{0xF4,06,{0xFF,0xFF,0xF9,0xFF,0xFF,0xFF}},
-	{0x6F,01,{0x9C}},
-	{0xF4,02,{0xFF,0xC0}},
-
-	{0x11, 0,  {} },
-	{REGFLAG_DELAY, 80, {} },
-	{0x29, 0, {} },
-
-	/* LVDET ON */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x01} },
-	{0x6F, 1,  {0x03} },
-	{0xC7, 1,  {0x47} },
-	/* ESD CONFIG ON */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0xBE, 2,  {0x47,0xC5} },
-	/* cmd 2/3 lock */
-	{0xF0, 5,  {0x55,0xAA,0x52,0x00,0x00} },
-	{0xFF, 4,  {0xAA,0x55,0xA5,0x00} },
-	{REGFLAG_END_OF_TABLE, 0x00, {}},
+    {0x3B, 4, {0x00, 0x0C, 0x00, 0x34}},
+    {0xFF, 4, {0xAA, 0x55, 0xA5, 0x80}},
+    {0x6F, 1, {0x19}},
+    {0xF2, 1, {0x00}},
+    {0x6F, 1, {0x14}},
+    {0xF4, 1, {0x40}},
+    {0x6F, 1, {0x17}},
+    {0xF4, 1, {0x02}},
+    {0x6F, 1, {0x31}},
+    {0xFC, 1, {0x30}},
+    {0xFF, 4, {0xAA, 0x55, 0xA5, 0x81}},
+    {0x6F, 1, {0x3C}},
+    {0xF5, 1, {0x81}},
+    {0x6F, 1, {0x13}},
+    {0xF9, 1, {0x01}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x01}},
+    {0x6F, 1, {0x03}},
+    {0xC7, 1, {0x07}},
+    {0x6F, 1, {0x05}},
+    {0xC7, 2, {0x27, 0x08}},
+    {0x6F, 1, {0x0A}},
+    {0xE4, 1, {0x90}},
+    {0x17, 1, {0x03}},
+    {0x71, 1, {0x00}},
+    {0x8D, 8, {0x00, 0x00, 0x04, 0x37, 0x00, 0x00, 0x09, 0x5F}},
+    {0x2F, 1, {0x02}},
+    {0x2A, 4, {0x00, 0x00, 0x04, 0x37}},
+    {0x2B, 4, {0x00, 0x00, 0x09, 0x5F}},
+    {0x03, 1, {0x00}},
+    {0x90, 2, {0x03, 0x43}},
+    {0x91, 18, {0x89, 0x28, 0x00, 0x14, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0xE8, 0x00, 0x07, 0x05, 0x0E, 0x05, 0x16, 0x10, 0xF0}},
+    {0x93, 18, {0x89, 0x28, 0x00, 0x14, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0xE8, 0x00, 0x07, 0x05, 0x0E, 0x05, 0x16, 0x10, 0xF0}},
+    {0x95, 18, {0x89, 0x28, 0x00, 0x14, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0xE8, 0x00, 0x07, 0x05, 0x0E, 0x05, 0x16, 0x10, 0xF0}},
+    {0x97, 18, {0x89, 0x28, 0x00, 0x14, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0xE8, 0x00, 0x07, 0x05, 0x0E, 0x05, 0x16, 0x10, 0xF0}},
+    {0x51, 6, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x00}},
+    {0xB2, 1, {0x09}},
+    {0x6F, 1, {0x05}},
+    {0xB2, 2, {0x04, 0x04}},
+    {0x53, 1, {0x20}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x00}},
+    {0x6F, 1, {0x03}},
+    {0xC0, 1, {0x54}},
+    {0x26, 1, {0x03}},
+    {0x5F, 1, {0x01}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x00, 0x00}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x00}},
+    {0x6F, 1, {0x01}},
+    {0xBE, 1, {0x47}},
+    {0x6F, 1, {0x13}},
+    {0xBE, 1, {0x00}},
+    {0x6F, 1, {0x05}},
+    {0xBE, 1, {0x18}},
+    {0x6F, 1, {0x0F}},
+    {0xBE, 2, {0xFB, 0xFB}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x01}},
+    {0xE8, 1, {0x30}},
+    {0xFF, 4, {0xAA, 0x55, 0xA5, 0x84}},
+    {0x6F, 1, {0x21}},
+    {0xF4, 6, {0xFF, 0xFF, 0xF9, 0xFF, 0xFF, 0xFF}},
+    {0x35, 1, {0x00}},
+    {0x6F, 1, {0x9C}},
+    {0xF4, 2, {0xFF, 0xC0}},
+    {0x57, 1, {0x00}},
+    {0x11, 0, {}},
+    {REGFLAG_DELAY, 80, {}},
+    {0x29, 0, {}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x01}},
+    {0x6F, 1, {0x03}},
+    {0xC7, 1, {0x47}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x00}},
+    {0x6F, 1, {0x13}},
+    {0xBE, 1, {0xC5}},
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x00, 0x00}},
+    {0xFF, 4, {0xAA, 0x55, 0xA5, 0x00}},
+    {REGFLAG_END_OF_TABLE, 0, {}},
 };
 
 static struct LCM_setting_table lcm_suspend_setting[] = {
-	{0xF0, 5,  {0x55,0xAA,0x52,0x08,0x00} },
-	{0xBE, 2,  {0x47,0x00} },
-	{0x28, 0, {} },
-	{REGFLAG_DELAY, 10, {} },
-	{0x10, 0, {} },
-	{REGFLAG_DELAY, 100, {} },
+    {0xF0, 5, {0x55, 0xAA, 0x52, 0x08, 0x00}},
+    {0x6F, 1, {0x13}},
+    {0xBE, 1, {0x00}},
+    {0x28, 0, {}},
+    {REGFLAG_DELAY, 10, {}},
+    {0x10, 0, {}},
+    {REGFLAG_DELAY, 100, {}},
 };
 
 static void push_table(struct lcm *ctx, struct LCM_setting_table *table, unsigned int count)
@@ -518,32 +441,45 @@ static void lcm_panel_init(struct lcm *ctx)
 	}
 
 	if (ctx->gir_status == 1) {
-		if (init_setting_vdo[GIR_INIT_INDEX1].cmd == 0x5F)
-					init_setting_vdo[GIR_INIT_INDEX1].para_list[0] = 0x00;
-		else
-			pr_debug("%s: please check GIR_INIT_INDEX1\n", __func__);
-		if (init_setting_vdo[GIR_INIT_INDEX2].cmd == 0x26)
-			init_setting_vdo[GIR_INIT_INDEX2].para_list[0] = 0x03;
-		else
-			pr_debug("%s: please check GIR_INIT_INDEX2\n", __func__);
-		if (init_setting_vdo[GIR_INIT_INDEX3].cmd == 0xC0)
-			init_setting_vdo[GIR_INIT_INDEX3].para_list[0] = 0x53;
-		else
-			pr_debug("%s: please check GIR_INIT_INDEX3\n", __func__);
-	} else {
-		if (init_setting_vdo[GIR_INIT_INDEX1].cmd == 0x5F)
-					init_setting_vdo[GIR_INIT_INDEX1].para_list[0] = 0x01;
+		if (init_setting_vdo[GIR_INIT_INDEX1].cmd == 0xC0)
+					init_setting_vdo[GIR_INIT_INDEX1].para_list[0] = 0x21;
 		else
 			pr_debug("%s: please check GIR_INIT_INDEX1\n", __func__);
 		if (init_setting_vdo[GIR_INIT_INDEX2].cmd == 0x26)
 			init_setting_vdo[GIR_INIT_INDEX2].para_list[0] = 0x00;
 		else
 			pr_debug("%s: please check GIR_INIT_INDEX2\n", __func__);
-
-		if (init_setting_vdo[GIR_INIT_INDEX3].cmd == 0xC0)
-			init_setting_vdo[GIR_INIT_INDEX3].para_list[0] = 0x20;
+		if (init_setting_vdo[GIR_INIT_INDEX3].cmd == 0x5F)
+			init_setting_vdo[GIR_INIT_INDEX3].para_list[0] = 0x0;
 		else
 			pr_debug("%s: please check GIR_INIT_INDEX3\n", __func__);
+	} else {
+		if (init_setting_vdo[GIR_INIT_INDEX1].cmd == 0xC0)
+					init_setting_vdo[GIR_INIT_INDEX1].para_list[0] = 0x54;
+		else
+			pr_debug("%s: please check GIR_INIT_INDEX1\n", __func__);
+		if (init_setting_vdo[GIR_INIT_INDEX2].cmd == 0x26)
+			init_setting_vdo[GIR_INIT_INDEX2].para_list[0] = 0x03;
+		else
+			pr_debug("%s: please check GIR_INIT_INDEX2\n", __func__);
+
+		if (init_setting_vdo[GIR_INIT_INDEX3].cmd == 0x5F)
+			init_setting_vdo[GIR_INIT_INDEX3].para_list[0] = 0x01;
+		else
+			pr_debug("%s: please check GIR_INIT_INDEX3\n", __func__);
+	}
+
+	if (ctx->crc_status == 1) {
+		if (init_setting_vdo[GIR_CRC_INDEX].cmd == 0x57)
+			init_setting_vdo[GIR_CRC_INDEX].para_list[0] = 0x80;
+		else
+			pr_debug("%s: please check GIR_CRC_INDEX\n", __func__);
+	} else {
+		if (init_setting_vdo[GIR_CRC_INDEX].cmd == 0x57)
+			init_setting_vdo[GIR_CRC_INDEX].para_list[0] = 0x0;
+		else
+			pr_debug("%s: please check GIR_CRC_INDEX\n", __func__);
+
 	}
 
 	push_table(ctx, init_setting_vdo, sizeof(init_setting_vdo) / sizeof(struct LCM_setting_table));
@@ -687,10 +623,6 @@ static int lcm_prepare(struct drm_panel *panel)
 
 	ctx->prepared = true;
 
-#ifdef PANEL_SUPPORT_READBACK
-	lcm_panel_get_data(ctx);
-#endif
-
 	return ret;
 }
 
@@ -800,254 +732,16 @@ static int lcm_get_virtual_width(void)
 	return 1080;
 }
 
-#ifdef CONFIG_MI_DISP_VDO_TO_CMD_AOD
-static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
-	int doze_en)
-{
-	unsigned long mode_flags;
-
-	pr_debug("%s + \n", __func__);
-
-	if (doze_en) {
-		mode_flags = MIPI_DSI_MODE_LPM
-		       | MIPI_DSI_MODE_EOT_PACKET
-		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
-	} else {
-		mode_flags = MIPI_DSI_MODE_VIDEO
-		       | MIPI_DSI_MODE_VIDEO_BURST
-		       | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_EOT_PACKET
-		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
-	}
-
-	return mode_flags;
-}
-
-static struct LCM_setting_table lcm_normal_to_aod[] = {
-	{REGFLAG_CMD, 7, {0x51,0x00,0x00,0x00,0x00,0x03,0xFF} },
-	{REGFLAG_CMD, 1, {0x39} },
-	{REGFLAG_CMD, 2, {0x65,0x01} },
-	//{REGFLAG_CMD, 1, {0x29} },
-	{REGFLAG_END_OF_TABLE, 0x00, {} },
-};
-
-static int panel_doze_enable(struct drm_panel *panel,
-	void *dsi, dcs_write_gce cb, void *handle)
-{
-	struct lcm *ctx = panel_to_lcm(panel);
-	unsigned int i = 0;
-
-	pr_debug("%s + \n", __func__);
-
-	mutex_lock(&ctx->panel_lock);
-	for (i = 0; i < (sizeof(lcm_normal_to_aod) /
-			sizeof(struct LCM_setting_table)); i++) {
-		unsigned int cmd;
-
-		cmd = lcm_normal_to_aod[i].cmd;
-		switch (cmd) {
-		case REGFLAG_DELAY:
-			msleep(lcm_normal_to_aod[i].count);
-			break;
-		case REGFLAG_UDELAY:
-			udelay(lcm_normal_to_aod[i].count);
-			break;
-		case REGFLAG_END_OF_TABLE:
-			break;
-		default:
-			cb(dsi, handle, lcm_normal_to_aod[i].para_list,
-				lcm_normal_to_aod[i].count);
-		}
-	}
-	mutex_unlock(&ctx->panel_lock);
-
-	return 0;
-}
-
-static int panel_doze_enable_start(struct drm_panel *panel,
-	void *dsi, dcs_write_gce cb, void *handle)
-{
-	struct lcm *ctx = panel_to_lcm(panel);
-	int cmd = 0x28;
-	pr_debug("%s + \n", __func__);
-
-	mutex_lock(&ctx->panel_lock);
-	ctx->doze_state = 1;
-	//cb(dsi, handle, &cmd, 1);
-	mutex_unlock(&ctx->panel_lock);
-
-	return 0;
-}
-
-static struct LCM_setting_table lcm_aod_to_normal[] = {
-	{REGFLAG_CMD, 7, {0x51,0x00,0x00,0x00,0x00,0x03,0xFF} },
-	{REGFLAG_CMD, 2, {0x65,0x00} },
-	{REGFLAG_CMD, 1, {0x38} },
-	{REGFLAG_END_OF_TABLE, 0x00, {} },
-};
-
-static int panel_doze_disable(struct drm_panel *panel,
-	void *dsi, dcs_write_gce cb, void *handle)
-{
-	struct lcm *ctx = panel_to_lcm(panel);
-	unsigned int i = 0;
-
-	mutex_lock(&ctx->panel_lock);
-	pr_debug("%s: ctx->dynamic_fps = %d\n", __func__, ctx->dynamic_fps);
-	if (ctx->dynamic_fps == 120) {
-		if (lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].cmd == 0x6C)
-			lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].para_list[1] = 0x02;
-	} else if (ctx->dynamic_fps == 90) {
-		if (lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].cmd == 0x6C)
-			lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].para_list[1] = 0x01;
-	} else if (ctx->dynamic_fps == 60) {
-		if (lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].cmd == 0x6C)
-			lcm_aod_to_normal[AOD_TO_NORMAL_FPS_INDEX].para_list[1] = 0x00;
-	}
-
-	/* Switch back to VDO mode */
-	for (i = 0; i < (sizeof(lcm_aod_to_normal) /
-			sizeof(struct LCM_setting_table)); i++) {
-		unsigned int cmd;
-
-		cmd = lcm_aod_to_normal[i].cmd;
-
-		switch (cmd) {
-		case REGFLAG_DELAY:
-			msleep(lcm_aod_to_normal[i].count);
-			break;
-		case REGFLAG_UDELAY:
-			udelay(lcm_aod_to_normal[i].count);
-			break;
-		case REGFLAG_END_OF_TABLE:
-			break;
-		default:
-			cb(dsi, handle, lcm_aod_to_normal[i].para_list,
-				lcm_aod_to_normal[i].count);
-		}
-	}
-	ctx->doze_state = 0;
-
-	mutex_unlock(&ctx->panel_lock);
-
-	return 0;
-}
-
-static int panel_doze_post_disp_on(struct drm_panel *panel,
-		void *dsi, dcs_write_gce cb, void *handle)
-{
-	pr_debug("%s + \n", __func__);
-
-/*
-	struct lcm *ctx = panel_to_lcm(panel);
-	int cmd = 0;
-
-	cmd = 0x29;
-	mutex_lock(&ctx->panel_lock);
-	cb(dsi, handle, &cmd, 1);
-	mutex_unlock(&ctx->panel_lock);
-*/
-	return 0;
-}
-
-static struct LCM_setting_table lcm_aod_high_mode[] = {
-	/* aod 60nit*/
-	{REGFLAG_CMD, 2, {0x6D, 0x00} },
-	{REGFLAG_END_OF_TABLE, 0x00, {} }
-};
-
-static struct LCM_setting_table lcm_aod_low_mode[] = {
-	/* aod 5nit*/
-	{REGFLAG_CMD, 2, {0x6D, 0x02} },
-	{REGFLAG_END_OF_TABLE, 0x00, {} }
-};
-
-static int panel_set_aod_light_mode(void *dsi,
-	dcs_write_gce cb, void *handle, unsigned int mode)
-{
-	struct lcm *ctx = panel_to_lcm(this_panel);
-	int i = 0;
-
-	pr_debug("debug for lcm %s\n", __func__);
-
-	mutex_lock(&ctx->panel_lock);
-	if (mode == DOZE_BRIGHTNESS_HBM) {
-		for (i = 0; i < sizeof(lcm_aod_high_mode)/sizeof(struct LCM_setting_table); i++)
-			cb(dsi, handle, lcm_aod_high_mode[i].para_list, lcm_aod_high_mode[i].count);
-	} else if (mode == DOZE_BRIGHTNESS_LBM){
-		for (i = 0; i < sizeof(lcm_aod_low_mode)/sizeof(struct LCM_setting_table); i++)
-			cb(dsi, handle, lcm_aod_low_mode[i].para_list, lcm_aod_low_mode[i].count);
-	}
-	mutex_unlock(&ctx->panel_lock);
-	pr_debug("%s : %d !\n", __func__, mode);
-
-	return 0;
-}
-
-#ifdef CONFIG_MI_DISP
-static int panel_set_doze_brightness(struct drm_panel *panel, int doze_brightness)
-{
-	int ret = 0;
-	struct lcm *ctx;
-	char lcm_aod_high_mode[] = {0x6D, 0x00};
-	char lcm_aod_low_mode[] = {0x6D, 0x02};
-
-	if (!panel) {
-		pr_err("invalid params\n");
-		return -1;
-	}
-
-	ctx = panel_to_lcm(panel);
-
-	if (ctx->doze_brightness_state == doze_brightness) {
-		pr_debug("%s skip same doze_brightness set:%d\n", __func__, doze_brightness);
-		return 0;
-	}
-
-	if (cmd_msg != NULL) {
-		cmd_msg->channel = 0;
-		cmd_msg->flags = 0;//MIPI_DSI_MSG_USE_LPM;
-		cmd_msg->tx_cmd_num = 1;
-		cmd_msg->type[0] = 0x15;
-		if (DOZE_BRIGHTNESS_LBM  == doze_brightness)
-			cmd_msg->tx_buf[0] = lcm_aod_low_mode;
-		else if (DOZE_BRIGHTNESS_HBM == doze_brightness)
-			cmd_msg->tx_buf[0] = lcm_aod_high_mode;
-		else
-			cmd_msg->tx_buf[0] = lcm_aod_low_mode;
-		cmd_msg->tx_len[0] = 2;
-		mtk_ddic_dsi_send_cmd(cmd_msg, true, false);
-	}
-
-	ctx->doze_brightness_state = doze_brightness;
-	pr_debug("%s set doze_brightness %d end -\n", __func__, doze_brightness);
-	return ret;
-}
-
-static int panel_get_doze_brightness(struct drm_panel *panel, u32 *doze_brightness)
-{
-	int count = 0;
-	struct lcm *ctx = panel_to_lcm(panel);
-
-	if (!panel) {
-		pr_err("invalid params\n");
-		return -EAGAIN;
-	}
-
-	*doze_brightness = ctx->doze_brightness_state;
-	pr_debug("%s get doze_brightness %d end -\n", __func__, *doze_brightness);
-	return count;
-
-}
-#endif
-#else
 #ifdef CONFIG_MI_DISP
 static int panel_set_doze_brightness(struct drm_panel *panel, int doze_brightness)
 {
 	int ret = 0;
 	struct lcm *ctx;
 
-	char lcm_aod_high_mode[] = {0x51,0x00,0x00,0x00,0x00,0x03,0xFF};
-	char lcm_aod_low_mode[] = {0x51,0x00,0x00,0x00,0x00,0x01,0xFF};
+	// 0x03,0xFF -> 0x0F,0xFE
+	char lcm_aod_high_mode[] = {0x51,0x00,0x00,0x00,0x00,0x0F,0xFE};
+	// 0x01,0xFF -> 0x01,0x55
+	char lcm_aod_low_mode[] = {0x51,0x00,0x00,0x00,0x00,0x01,0x55};
 	char lcm_aod_mode_enter[] = {0x39, 0x00};
 	char lcm_aod_mode_exit[] = {0x38, 0x00};
 
@@ -1112,65 +806,64 @@ static int panel_get_doze_brightness(struct drm_panel *panel, u32 *doze_brightne
 	return count;
 }
 #endif
-#endif
 
 #ifdef ENABLE_30HZ
 static struct drm_display_mode mode_30hz = {
-	.clock = 186486,
+	.clock = 186870, // changed
 	.hdisplay = 1080,
-	.hsync_start = 1080 + 1452,			//HFP
-	.hsync_end = 1080 + 1452 + 8,		//HSA
-	.htotal = 1080 + 1452 + 8+ 16,		//HBP
+	.hsync_start = 1080 + 1424,			//HFP changed
+	.hsync_end = 1080 + 1424 + 8,		//HSA changed
+	.htotal = 1080 + 1424 + 8+ 16,		//HBP changed
 	.vdisplay = 2400,
-	.vsync_start = 2400 + 20,			//VFP
-	.vsync_end = 2400 + 20 + 4,		//VSA
-	.vtotal = 2400 + 20 + 4 + 8,	//VBP
+	.vsync_start = 2400 + 52,			//VFP changed
+	.vsync_end = 2400 + 52 + 4,		//VSA changed
+	.vtotal = 2400 + 52 + 4 + 8,	//VBP changed
 	.vrefresh = 30,
 };
 #endif
 
 static struct drm_display_mode mode_60hz = {
-	.clock = 328029,
+	.clock = 331162, // changed
 	.hdisplay = 1080,
 	.hsync_start = 1080 + 20,			//HFP
 	.hsync_end = 1080 + 20 + 8, 	//HSA
 	.htotal = 1080 + 20 + 8 + 16,		//HBP
 	.vdisplay = 2400,
-	.vsync_start = 2400 + 2452,			//VFP
-	.vsync_end = 2400 + 2452 + 4,		//VSA
-	.vtotal = 2400 + 2452 + 4 + 8,	//VBP
+	.vsync_start = 2400 + 2516,			//VFP changed
+	.vsync_end = 2400 + 2516 + 4,		//VSA changed
+	.vtotal = 2400 + 2516 + 4 + 8,	//VBP changed
 	.vrefresh = 60,
 };
 
 static struct drm_display_mode mode_90hz = {
-	.clock = 325201,
+	.clock = 328316, // changed
 	.hdisplay = 1080,
-	.hsync_start = 1080 + 28,			//HFP
-	.hsync_end = 1080 + 28+ 8,		//HSA
-	.htotal = 1080 + 28 + 8+ 16,		//HBP
+	.hsync_start = 1080 + 20,			//HFP changed
+	.hsync_end = 1080 + 20+ 8,		//HSA changed
+	.htotal = 1080 + 20 + 8+ 16,		//HBP changed
 	.vdisplay = 2400,
-	.vsync_start = 2400 + 780,			//VFP
-	.vsync_end = 2400 + 780 + 4,		//VSA
-	.vtotal = 2400 + 780 + 4 + 8,	//VBP
+	.vsync_start = 2400 + 822,			//VFP changed
+	.vsync_end = 2400 + 822 + 4,		//VSA changed
+	.vtotal = 2400 + 822 + 4 + 8,	//VBP changed
 	.vrefresh = 90,
 };
 
 static struct drm_display_mode mode_120hz = {
-	.clock = 328029,
+	.clock = 331162, // changed
 	.hdisplay = 1080,
 	.hsync_start = 1080 + 20,			//HFP
 	.hsync_end = 1080 + 20+ 8,		//HSA
 	.htotal = 1080 + 20 + 8+ 16,		//HBP
 	.vdisplay = 2400,
-	.vsync_start = 2400 + 20,			//VFP
-	.vsync_end = 2400 + 20 + 4,		//VSA
-	.vtotal = 2400 + 20 + 4 + 8,	//VBP
+	.vsync_start = 2400 + 52,			//VFP changed
+	.vsync_end = 2400 + 52 + 4,		//VSA changed
+	.vtotal = 2400 + 52 + 4 + 8,	//VBP changed
 	.vrefresh = 120,
 };
 
 #ifdef ENABLE_30HZ
 static struct mtk_panel_params ext_params_30hz = {
-	.lcm_index = 1,
+	.lcm_index = 2,
 	.pll_clk = DATA_RATE / 2,
 	.cust_esd_check = 0,
 	.esd_check_enable = 1,
@@ -1248,7 +941,7 @@ static struct mtk_panel_params ext_params_30hz = {
 #endif
 
 static struct mtk_panel_params ext_params_60hz = {
-	.lcm_index = 1,
+	.lcm_index = 2,
 	.pll_clk = DATA_RATE / 2,
 	.cust_esd_check = 0,
 	.esd_check_enable = 1,
@@ -1325,7 +1018,7 @@ static struct mtk_panel_params ext_params_60hz = {
 };
 
 static struct mtk_panel_params ext_params_90hz = {
-	.lcm_index = 1,
+	.lcm_index = 2,
 	.pll_clk = DATA_RATE / 2,
 	.cust_esd_check = 0,
 	.esd_check_enable = 1,
@@ -1402,7 +1095,7 @@ static struct mtk_panel_params ext_params_90hz = {
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.lcm_index = 1,
+	.lcm_index = 2,
 	.pll_clk = DATA_RATE / 2,
 	.cust_esd_check = 0,
 	.esd_check_enable = 1,
@@ -1723,6 +1416,9 @@ err:
 	return ret;
 }
 
+// Disassembly of stock kernel from later firmware indicates that this
+// function was stubbed out in all panel drivers, for some reason.
+#ifdef ENABLE_ELVSS_CONTROL
 static void panel_elvss_control(struct drm_panel *panel, bool en)
 {
 	struct lcm *ctx;
@@ -1756,19 +1452,21 @@ static void panel_elvss_control(struct drm_panel *panel, bool en)
 		mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
 	}
 }
+#endif
 
 static int panel_set_gir_on(struct drm_panel *panel)
 {
-	char gir_on_set1[] = {0x5F, 0x00};
-	char gir_on_set2[] = {0x26, 0x03};
-	char gir_on_set3[] = {0xF0, 0x55,0xAA,0x52,0x08,0x00};
-	char gir_on_set4[] = {0x6F, 0x03};
-	char gir_on_set5[] = {0xC0, 0x53};
-	char gir_on_set6[] = {0xF0, 0x55,0xAA,0x52,0x00,0x00};
+	char gir_on[] = {0xA9, 0x02, 0x00,
+					 0xC0, 0x03, 0x03,
+					 0x21, 0x01,
+					 0x00, 0x26, 0x00,
+					 0x00, 0x03, 0x01,
+					 0x00, 0x5f,
+					 0x00, 0x00, 0x01};
 	struct lcm *ctx;
 	int ret = 0;
 
-	pr_debug("%s: +\n", __func__);
+	pr_debug("%s: + ctx->gir_status = %d  \n", __func__, ctx->gir_status);
 
 	if (!panel) {
 		pr_err("%s: panel is NULL\n", __func__);
@@ -1777,44 +1475,19 @@ static int panel_set_gir_on(struct drm_panel *panel)
 	}
 
 	ctx = panel_to_lcm(panel);
-	ctx->gir_status = 1;
 	if (!ctx->enabled) {
 		pr_err("%s: panel isn't enabled\n", __func__);
 	} else {
 		if (cmd_msg != NULL) {
 			cmd_msg->channel = 0;
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set1) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
+			cmd_msg->flags = ARRAY_SIZE(gir_on) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
 			cmd_msg->tx_cmd_num = 1;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set1) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set1;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set1);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set2) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set2) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set2;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set2);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set3) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set3) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set3;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set3);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set4) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set4) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set4;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set4);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set5) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set5) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set5;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set5);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_on_set6) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_on_set6) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_on_set6;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on_set6);
+			cmd_msg->type[0] = ARRAY_SIZE(gir_on) > 2 ? 0x39 : 0x15;
+			cmd_msg->tx_buf[0] = gir_on;
+			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on);
 			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
 		}
+		ctx->gir_status = 1;
 	}
 
 err:
@@ -1823,61 +1496,38 @@ err:
 
 static int panel_set_gir_off(struct drm_panel *panel)
 {
-	char gir_off_set1[] = {0x5F, 0x01};
-	char gir_off_set2[] = {0x26, 0x00};
-	char gir_off_set3[] = {0xF0, 0x55,0xAA,0x52,0x08,0x00};
-	char gir_off_set4[] = {0x6F, 0x03};
-	char gir_off_set5[] = {0xC0, 0x20};
-	char gir_off_set6[] = {0xF0, 0x55,0xAA,0x52,0x00,0x00};
+	char gir_on[] = {0xA9, 0x02, 0x00,
+					 0xC0, 0x03, 0x03,
+					 0x54, 0x01,
+					 0x00, 0x26, 0x00,
+					 0x00, 0x03, 0x01,
+					 0x00, 0x5f,
+					 0x00, 0x00, 0x01};
 	struct lcm *ctx;
-	int ret = -1;
+	int ret = 0;
 
-	pr_debug("%s: +\n", __func__);
+	pr_debug("%s: + ctx->gir_status = %d  \n", __func__, ctx->gir_status);
 
 	if (!panel) {
 		pr_err("%s: panel is NULL\n", __func__);
+		ret = -1;
 		goto err;
 	}
 
 	ctx = panel_to_lcm(panel);
-	ctx->gir_status = 0;
 	if (!ctx->enabled) {
 		pr_err("%s: panel isn't enabled\n", __func__);
 	} else {
 		if (cmd_msg != NULL) {
 			cmd_msg->channel = 0;
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set1) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
+			cmd_msg->flags = ARRAY_SIZE(gir_on) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
 			cmd_msg->tx_cmd_num = 1;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set1) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set1;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set1);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set2) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set2) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set2;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set2);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set3) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set3) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set3;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set3);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set4) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set4) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set4;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set4);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set5) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set5) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set5;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set5);
-			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
-			cmd_msg->flags = ARRAY_SIZE(gir_off_set6) > 2 ? 0 : MIPI_DSI_MSG_USE_LPM;
-			cmd_msg->type[0] = ARRAY_SIZE(gir_off_set6) > 2 ? 0x39 : 0x15;
-			cmd_msg->tx_buf[0] = gir_off_set6;
-			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_off_set6);
+			cmd_msg->type[0] = ARRAY_SIZE(gir_on) > 2 ? 0x39 : 0x15;
+			cmd_msg->tx_buf[0] = gir_on;
+			cmd_msg->tx_len[0] = ARRAY_SIZE(gir_on);
 			mtk_ddic_dsi_send_cmd(cmd_msg, false, false);
 		}
+		ctx->gir_status = 0;
 	}
 
 err:
@@ -1909,16 +1559,6 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.get_virtual_heigh = lcm_get_virtual_heigh,
 	.get_virtual_width = lcm_get_virtual_width,
-#ifdef CONFIG_MI_DISP_VDO_TO_CMD_AOD
-	/* add for ramless AOD */
-	.doze_get_mode_flags = panel_doze_get_mode_flags,
-	.doze_enable = panel_doze_enable,
-	.doze_enable_start = panel_doze_enable_start,
-	//.doze_area = panel_doze_area,
-	.doze_disable = panel_doze_disable,
-	.doze_post_disp_on = panel_doze_post_disp_on,
-	.set_aod_light_mode = panel_set_aod_light_mode,
-#endif
 #ifdef CONFIG_MI_DISP
 	.set_doze_brightness = panel_set_doze_brightness,
 	.get_doze_brightness = panel_get_doze_brightness,
@@ -1933,7 +1573,9 @@ static struct mtk_panel_funcs ext_funcs = {
 #endif
 	.setbacklight_control = lcm_setbacklight_control,
 	.get_panel_initialized = get_lcm_initialized,
+#ifdef ENABLE_ELVSS_CONTROL
 	.panel_elvss_control = panel_elvss_control,
+#endif
 	.panel_set_gir_on = panel_set_gir_on,
 	.panel_set_gir_off = panel_set_gir_off,
 	.panel_get_gir_status = panel_get_gir_status,
@@ -2153,7 +1795,7 @@ static int lcm_remove(struct mipi_dsi_device *dsi)
 }
 
 static const struct of_device_id lcm_of_match[] = {
-	{ .compatible = "m16_36_02_0b_dsc_vdo,lcm", },
+	{ .compatible = "m16_45_02_0c_dsc_vdo,lcm", },
 	{ }
 };
 
@@ -2163,7 +1805,7 @@ static struct mipi_dsi_driver lcm_driver = {
 	.probe = lcm_probe,
 	.remove = lcm_remove,
 	.driver = {
-		.name = "panel-m16-36-02-0b-dsc-vdo",
+		.name = "panel-m16-45-02-0c-dsc-vdo",
 		.owner = THIS_MODULE,
 		.of_match_table = lcm_of_match,
 	},
@@ -2174,6 +1816,6 @@ module_mipi_dsi_driver(lcm_driver);
 module_param_string(oled_wp, oled_wp_cmdline, sizeof(oled_wp_cmdline), 0600);
 MODULE_PARM_DESC(oled_wp, "oled_wp=<white_point_info>");
 
-MODULE_AUTHOR("Jiabin3 Chen <chenjiabin3@xiaomi.com>");
-MODULE_DESCRIPTION("panel-m16-36-02-0b-dsc-vdo Panel Driver");
+MODULE_AUTHOR("bengris32 <bengris32@protonmail.ch>");
+MODULE_DESCRIPTION("panel-m16-45-02-0c-dsc-vdo Panel Driver");
 MODULE_LICENSE("GPL v2");
