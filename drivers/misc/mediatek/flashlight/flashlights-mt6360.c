@@ -802,7 +802,6 @@ err_node_put:
 }
 
 
-static int flash_is_use;
 static void  mt6360_flash2_brightness_set(struct led_classdev *led_cdev,
 		enum led_brightness value)
 {
@@ -867,52 +866,23 @@ static void mt6360_torch_brightness_set(struct led_classdev *led_cdev,
 	struct flashlight_arg arg;
 	memset(&arg, 0, sizeof(struct flashlight_arg));
 	arg.channel = 0;
-	mt6360_disable(MT6360_CHANNEL_CH1);
-	mt6360_disable(MT6360_CHANNEL_CH2);
-	if (LED_OFF == value) {
-		arg.level = -1;
-		if (flash_is_use) {
-			pr_info("disable flashlight");
-			flash_is_use = 0;
-			mt6360_disable(MT6360_CHANNEL_ALL);
-			mt6360_timer_cancel(MT6360_CHANNEL_CH1);
-			mt6360_timer_cancel(MT6360_CHANNEL_CH2);
-			/* clear flashlight state */
-			mt6360_en_ch1 = MT6360_NONE;
-			mt6360_en_ch2 = MT6360_NONE;
-			mt6360_set_driver(0);
-		} else {
-			pr_debug("flashlight is alreadly disable");
-		}
-		return;
-	} else {
-		arg.level = value; //torch current 100ma
-		flash_is_use = 1;
-	}
+	arg.level = value; //torch current 100ma
 	//torch mode
 	if (0 == strcmp(led_cdev->name, "torch-light0")) {
-			arg.level = value;
+		arg.level = value;
 	} else if (0 == strcmp(led_cdev->name, "torch-light1")) {
 		arg.channel = MT6360_CHANNEL_CH2;
-			arg.level = value;
+		arg.level = value;
 	}
-	mt6360_set_driver(1);
-	mt6360_operate(MT6360_CHANNEL_CH1, MT6360_DISABLE);
-	mt6360_operate(MT6360_CHANNEL_CH2, MT6360_DISABLE);
-#if 1
+
 	if (arg.channel == MT6360_CHANNEL_CH1) {
 		flashlight_set_torch_brightness (
 		flashlight_dev_ch1, mt6360_torch_level[arg.level]);
-		mt6360_timeout_ms[MT6360_CHANNEL_CH1] = 0;
-		mt6360_en_ch1 = MT6360_ENABLE_TORCH;
 	} else if (arg.channel == MT6360_CHANNEL_CH2) {
 		flashlight_set_torch_brightness (
 		flashlight_dev_ch2, mt6360_torch_level[arg.level]);
-		mt6360_timeout_ms[MT6360_CHANNEL_CH2] = 0;
-		mt6360_en_ch2 = MT6360_ENABLE_TORCH;
 	}
-#endif
-	mt6360_enable();
+
 	return;
 }
 static void mt6360_torch2_brightness_set(struct led_classdev *led_cdev,
@@ -921,33 +891,12 @@ static void mt6360_torch2_brightness_set(struct led_classdev *led_cdev,
 	struct flashlight_arg arg;
 	memset(&arg, 0, sizeof(struct flashlight_arg));
 	arg.channel = 0;
-	mt6360_disable(MT6360_CHANNEL_CH1);
-	mt6360_disable(MT6360_CHANNEL_CH2);
-	if (LED_OFF == value) {
-		arg.level = 0;
-		if (flash_is_use) {
-			pr_info("disable flashlight");
-			flash_is_use = 0;
-			mt6360_operate(MT6360_CHANNEL_CH1, MT6360_DISABLE);
-			mt6360_operate(MT6360_CHANNEL_CH2, MT6360_DISABLE);
-			mt6360_set_driver(0);
-		}
-	} else  {
-		arg.level = value; //torch current 200ma
-	}
-	mt6360_set_driver(1);
-	mt6360_operate(MT6360_CHANNEL_CH1, MT6360_DISABLE);
-	mt6360_operate(MT6360_CHANNEL_CH2, MT6360_DISABLE);
+	arg.level = value; //torch current 200ma
 	if (0 == strcmp(led_cdev->name, "torch-light2")) {
 		flashlight_set_torch_brightness(
 			flashlight_dev_ch1, mt6360_torch_level[arg.level]);
-			mt6360_timeout_ms[MT6360_CHANNEL_CH1] = 0;
-			mt6360_en_ch1 = MT6360_ENABLE_TORCH;
 			flashlight_set_torch_brightness(
 				flashlight_dev_ch2, mt6360_torch_level[arg.level]);
-			mt6360_timeout_ms[MT6360_CHANNEL_CH2] = 0;
-			mt6360_en_ch2 = MT6360_ENABLE_TORCH;
-		  mt6360_enable();
 	}
 	return;
 }
